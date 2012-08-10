@@ -30,7 +30,7 @@ import org.apache.hadoop.hbase.client.HTableInterface;
 import org.apache.hadoop.hbase.client.HTablePool;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Row;
-import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.FSHLog;
 import org.apache.hadoop.hbase.regionserver.wal.WALEdit;
 import org.apache.hadoop.hbase.replication.regionserver.metrics.ReplicationSinkMetrics;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -89,7 +89,7 @@ public class ReplicationSink {
    * @param entries
    * @throws IOException
    */
-  public void replicateEntries(HLog.Entry[] entries)
+  public void replicateEntries(FSHLog.Entry[] entries)
       throws IOException {
     if (entries.length == 0) {
       return;
@@ -101,7 +101,7 @@ public class ReplicationSink {
       // Map of table => list of Rows, we only want to flushCommits once per
       // invocation of this method per table.
       Map<byte[], List<Row>> rows = new TreeMap<byte[], List<Row>>(Bytes.BYTES_COMPARATOR);
-      for (HLog.Entry entry : entries) {
+      for (FSHLog.Entry entry : entries) {
         WALEdit edit = entry.getEdit();
         byte[] table = entry.getKey().getTablename();
         Put put = null;

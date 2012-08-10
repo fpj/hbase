@@ -23,11 +23,11 @@ package org.apache.hadoop.hbase.coprocessor;
 import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.classification.InterfaceStability;
 import org.apache.hadoop.hbase.CoprocessorEnvironment;
-import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.FSHLog;
 
 @InterfaceAudience.Public
 @InterfaceStability.Evolving
 public interface WALCoprocessorEnvironment extends CoprocessorEnvironment {
   /** @return reference to the region server services */
-  public HLog getWAL();
+  public FSHLog getWAL();
 }

@@ -374,7 +374,7 @@ public class HLogSplitter {
         "Splitting log file " + logfile.getPath() +
         "into a temporary staging area.");
     boolean skipErrors = conf.getBoolean("hbase.hlog.split.skip.errors",
-        HLog.SPLIT_SKIP_ERRORS_DEFAULT);
+        HLogUtil.SPLIT_SKIP_ERRORS_DEFAULT);
     int interval = conf.getInt("hbase.splitlog.report.interval.loglines", 1024);
     Path logPath = logfile.getPath();
     long logLength = logfile.getLen();
@@ -519,7 +519,7 @@ public class HLogSplitter {
     }
 
     for (Path p : processedLogs) {
-      Path newPath = HLog.getHLogArchivePath(oldLogDir, p);
+      Path newPath = FSHLog.getHLogArchivePath(oldLogDir, p);
       if (fs.exists(p)) {
         if (!fs.rename(p, newPath)) {
           LOG.warn("Unable to move  " + p + " to " + newPath);
@@ -554,7 +554,7 @@ public class HLogSplitter {
     Path tableDir = HTableDescriptor.getTableDir(rootDir, logEntry.getKey().getTablename());
     Path regiondir = HRegion.getRegionDir(tableDir,
       Bytes.toString(logEntry.getKey().getEncodedRegionName()));
-    Path dir = HLog.getRegionDirRecoveredEditsDir(regiondir);
+    Path dir = HLogUtil.getRegionDirRecoveredEditsDir(regiondir);
 
     if (!fs.exists(regiondir)) {
       LOG.info("This region's directory doesn't exist: "
@@ -573,7 +573,7 @@ public class HLogSplitter {
   }
 
   static String getTmpRecoveredEditsFileName(String fileName) {
-    return fileName + HLog.RECOVERED_LOG_TMPFILE_SUFFIX;
+    return fileName + HLogUtil.RECOVERED_LOG_TMPFILE_SUFFIX;
   }
 
   /**
@@ -733,7 +733,7 @@ public class HLogSplitter {
    */
   protected Writer createWriter(FileSystem fs, Path logfile, Configuration conf)
       throws IOException {
-    return HLog.createWriter(fs, logfile, conf);
+    return FSHLog.createWriter(fs, logfile, conf);
   }
 
   /**
@@ -741,7 +741,7 @@ public class HLogSplitter {
    */
   protected Reader getReader(FileSystem fs, Path curLogFile, Configuration conf)
       throws IOException {
-    return HLog.getReader(fs, curLogFile, conf);
+    return FSHLog.getReader(fs, curLogFile, conf);
   }
 
   /**

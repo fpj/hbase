@@ -182,7 +182,7 @@ import org.apache.hadoop.hbase.regionserver.metrics.RegionServerDynamicMetrics;
 import org.apache.hadoop.hbase.regionserver.metrics.RegionServerMetrics;
 import org.apache.hadoop.hbase.regionserver.metrics.SchemaMetrics;
 import org.apache.hadoop.hbase.regionserver.metrics.SchemaMetrics.StoreMetricType;
-import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.FSHLog;
 import org.apache.hadoop.hbase.regionserver.wal.WALActionsListener;
 import org.apache.hadoop.hbase.security.User;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -372,7 +372,7 @@ public class  HRegionServer implements ClientProtocol,
 
   // HLog and HLog roller. log is protected rather than private to avoid
   // eclipse warning when accessed by inner classes
-  protected volatile HLog hlog;
+  protected volatile FSHLog hlog;
   LogRoller hlogRoller;
 
   // flag set after we're done setting up server threads (used for testing)
@@ -1270,10 +1270,10 @@ public class  HRegionServer implements ClientProtocol,
    * @return A WAL instance.
    * @throws IOException
    */
-  private HLog setupWALAndReplication() throws IOException {
+  private FSHLog setupWALAndReplication() throws IOException {
     final Path oldLogDir = new Path(rootDir, HConstants.HREGION_OLDLOGDIR_NAME);
     Path logdir = new Path(rootDir,
-      HLog.getHLogDirectoryName(this.serverNameFromMasterPOV.toString()));
+      FSHLog.getHLogDirectoryName(this.serverNameFromMasterPOV.toString()));
     if (LOG.isDebugEnabled()) LOG.debug("logdir=" + logdir);
     if (this.fs.exists(logdir)) {
       throw new RegionServerRunningException("Region server has already " +
@@ -1293,8 +1293,8 @@ public class  HRegionServer implements ClientProtocol,
    * @return WAL instance.
    * @throws IOException
    */
-  protected HLog instantiateHLog(Path logdir, Path oldLogDir) throws IOException {
-    return new HLog(this.fs.getBackingFs(), logdir, oldLogDir, this.conf,
+  protected FSHLog instantiateHLog(Path logdir, Path oldLogDir) throws IOException {
+    return new FSHLog(this.fs.getBackingFs(), logdir, oldLogDir, this.conf,
       getWALActionListeners(), this.serverNameFromMasterPOV.toString());
   }
 
@@ -1302,7 +1302,7 @@ public class  HRegionServer implements ClientProtocol,
    * Called by {@link #instantiateHLog(Path, Path)} setting up WAL instance.
    * Add any {@link WALActionsListener}s you want inserted before WAL startup.
    * @return List of WALActionsListener that will be passed in to
-   * {@link HLog} on construction.
+   * {@link FSHLog} on construction.
    */
   protected List<WALActionsListener> getWALActionListeners() {
     List<WALActionsListener> listeners = new ArrayList<WALActionsListener>();
@@ -1613,7 +1613,7 @@ public class  HRegionServer implements ClientProtocol,
   }
 
   @Override
-  public HLog getWAL() {
+  public FSHLog getWAL() {
     return this.hlog;
   }
 
@@ -3614,7 +3614,7 @@ public class  HRegionServer implements ClientProtocol,
       if (replicationSinkHandler != null) {
         checkOpen();
         requestCount.incrementAndGet();
-        HLog.Entry[] entries = ProtobufUtil.toHLogEntries(request.getEntryList());
+        FSHLog.Entry[] entries = ProtobufUtil.toHLogEntries(request.getEntryList());
         if (entries != null && entries.length > 0) {
           replicationSinkHandler.replicateLogEntries(entries);
         }
@@ -3637,7 +3637,7 @@ public class  HRegionServer implements ClientProtocol,
       final RollWALWriterRequest request) throws ServiceException {
     try {
       requestCount.incrementAndGet();
-      HLog wal = this.getWAL();
+      FSHLog wal = this.getWAL();
       byte[][] regionsToFlush = wal.rollWriter(true);
       RollWALWriterResponse.Builder builder = RollWALWriterResponse.newBuilder();
       if (regionsToFlush != null) {

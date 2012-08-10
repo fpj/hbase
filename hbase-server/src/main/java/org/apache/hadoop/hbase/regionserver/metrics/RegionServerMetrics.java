@@ -33,7 +33,7 @@ import org.apache.hadoop.hbase.metrics.HBaseInfo;
 import org.apache.hadoop.hbase.metrics.MetricsRate;
 import org.apache.hadoop.hbase.metrics.histogram.MetricsHistogram;
 import com.yammer.metrics.stats.Snapshot;
-import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLogMetrics;
 import org.apache.hadoop.hbase.util.Pair;
 import org.apache.hadoop.hbase.util.Strings;
 import org.apache.hadoop.metrics.ContextFactory;
@@ -388,11 +388,11 @@ public class RegionServerMetrics implements Updater {
       // }
       // Means you can't pass a numOps of zero or get a ArithmeticException / by zero.
       // HLog metrics
-      addHLogMetric(HLog.getWriteTime(), this.fsWriteLatency);
-      addHLogMetric(HLog.getWriteSize(), this.fsWriteSize);
-      addHLogMetric(HLog.getSyncTime(), this.fsSyncLatency);
-      addHLogMetric(HLog.getSlowAppendTime(), this.slowHLogAppendTime);
-      this.slowHLogAppendCount.set(HLog.getSlowAppendCount());
+      addHLogMetric(HLogMetrics.getWriteTime(), this.fsWriteLatency);
+      addHLogMetric(HLogMetrics.getWriteSize(), this.fsWriteSize);
+      addHLogMetric(HLogMetrics.getSyncTime(), this.fsSyncLatency);
+      addHLogMetric(HLogMetrics.getSlowAppendTime(), this.slowHLogAppendTime);
+      this.slowHLogAppendCount.set(HLogMetrics.getSlowAppendCount());
       // HFile metrics, sequential reads
       int ops = HFile.getReadOps(); 
       if (ops != 0) this.fsReadLatency.inc(ops, HFile.getReadTimeMs());
@@ -442,7 +442,7 @@ public class RegionServerMetrics implements Updater {
     this.metricsRecord.update();
   }
 
-  private void addHLogMetric(HLog.Metric logMetric,
+  private void addHLogMetric(HLogMetrics.Metric logMetric,
       MetricsTimeVaryingRate hadoopMetric) {
     if (logMetric.count > 0)
       hadoopMetric.inc(logMetric.min);

@@ -101,7 +101,7 @@ import org.apache.hadoop.hbase.protobuf.generated.MasterAdminProtos.BalanceReque
 import org.apache.hadoop.hbase.protobuf.generated.MasterProtos.IsMasterRunningRequest;
 import org.apache.hadoop.hbase.protobuf.generated.MasterAdminProtos.SetBalancerRunningRequest;
 import org.apache.hadoop.hbase.protobuf.generated.MasterMonitorProtos.GetClusterStatusRequest;
-import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.FSHLog;
 import org.apache.hadoop.hbase.regionserver.wal.HLogKey;
 import org.apache.hadoop.hbase.regionserver.wal.WALEdit;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -759,12 +759,12 @@ public final class RequestConverter {
   * @return a ReplicateWALEntryRequest
   */
  public static ReplicateWALEntryRequest
-     buildReplicateWALEntryRequest(final HLog.Entry[] entries) {
+     buildReplicateWALEntryRequest(final FSHLog.Entry[] entries) {
    FamilyScope.Builder scopeBuilder = FamilyScope.newBuilder();
    WALEntry.Builder entryBuilder = WALEntry.newBuilder();
    ReplicateWALEntryRequest.Builder builder =
      ReplicateWALEntryRequest.newBuilder();
-   for (HLog.Entry entry: entries) {
+   for (FSHLog.Entry entry: entries) {
      entryBuilder.clear();
      WALKey.Builder keyBuilder = entryBuilder.getKeyBuilder();
      HLogKey key = entry.getKey();

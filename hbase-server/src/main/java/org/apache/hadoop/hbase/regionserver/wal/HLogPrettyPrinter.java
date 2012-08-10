@@ -39,7 +39,7 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.HBaseConfiguration;
 import org.apache.hadoop.hbase.KeyValue;
-import org.apache.hadoop.hbase.regionserver.wal.HLog.Reader;
+import org.apache.hadoop.hbase.regionserver.wal.FSHLog.Reader;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.codehaus.jackson.map.ObjectMapper;
 
@@ -240,9 +240,9 @@ public class HLogPrettyPrinter {
       out.print("[");
       firstTxn = true;
     }
-    Reader log = HLog.getReader(fs, p, conf);
+    Reader log = FSHLog.getReader(fs, p, conf);
     try {
-      HLog.Entry entry;
+      FSHLog.Entry entry;
       while ((entry = log.next()) != null) {
         HLogKey key = entry.getKey();
         WALEdit edit = entry.getEdit();

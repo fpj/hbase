@@ -107,7 +107,7 @@ import org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.RegionInfo;
 import org.apache.hadoop.hbase.protobuf.generated.HBaseProtos.RegionLoad;
 import org.apache.hadoop.hbase.protobuf.generated.MasterAdminProtos.CreateTableRequest;
 import org.apache.hadoop.hbase.protobuf.generated.MasterMonitorProtos.GetTableDescriptorsResponse;
-import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.FSHLog;
 import org.apache.hadoop.hbase.regionserver.wal.HLogKey;
 import org.apache.hadoop.hbase.regionserver.wal.WALEdit;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -928,9 +928,9 @@ public final class ProtobufUtil {
    * @param protoList the list of protocol buffer WALEntry
    * @return an array of HLog entries
    */
-  public static HLog.Entry[]
+  public static FSHLog.Entry[]
       toHLogEntries(final List<WALEntry> protoList) {
-    List<HLog.Entry> entries = new ArrayList<HLog.Entry>();
+    List<FSHLog.Entry> entries = new ArrayList<FSHLog.Entry>();
     for (WALEntry entry: protoList) {
       WALKey walKey = entry.getKey();
       java.util.UUID clusterId = HConstants.DEFAULT_CLUSTER_ID;
@@ -956,9 +956,9 @@ public final class ProtobufUtil {
         }
         edit.setScopes(scopes);
       }
-      entries.add(new HLog.Entry(key, edit));
+      entries.add(new FSHLog.Entry(key, edit));
     }
-    return entries.toArray(new HLog.Entry[entries.size()]);
+    return entries.toArray(new FSHLog.Entry[entries.size()]);
   }
 
   /**
@@ -1405,7 +1405,7 @@ public final class ProtobufUtil {
    * @throws IOException
    */
   public static void replicateWALEntry(final AdminProtocol admin,
-      final HLog.Entry[] entries) throws IOException {
+      final FSHLog.Entry[] entries) throws IOException {
     ReplicateWALEntryRequest request =
       RequestConverter.buildReplicateWALEntryRequest(entries);
     try {

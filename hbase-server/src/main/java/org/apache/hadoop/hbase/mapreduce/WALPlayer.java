@@ -35,7 +35,7 @@ import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Mutation;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.io.ImmutableBytesWritable;
-import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.FSHLog;
 import org.apache.hadoop.hbase.regionserver.wal.HLogKey;
 import org.apache.hadoop.hbase.regionserver.wal.WALEdit;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -82,7 +82,7 @@ public class WALPlayer extends Configured implements Tool {
         // skip all other tables
         if (Bytes.equals(table, key.getTablename())) {
           for (KeyValue kv : value.getKeyValues()) {
-            if (HLog.isMetaFamily(kv.getFamily())) continue;
+            if (FSHLog.isMetaFamily(kv.getFamily())) continue;
             context.write(new ImmutableBytesWritable(kv.getRow()), kv);
           }
         }
@@ -126,7 +126,7 @@ public class WALPlayer extends Configured implements Tool {
           KeyValue lastKV = null;
           for (KeyValue kv : value.getKeyValues()) {
             // filtering HLog meta entries, see HLog.completeCacheFlushLogEdit
-            if (HLog.isMetaFamily(kv.getFamily())) continue;
+            if (FSHLog.isMetaFamily(kv.getFamily())) continue;
 
             // A WALEdit may contain multiple operations (HBASE-3584) and/or
             // multiple rows (HBASE-5229).

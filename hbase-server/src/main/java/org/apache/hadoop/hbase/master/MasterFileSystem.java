@@ -48,7 +48,7 @@ import org.apache.hadoop.hbase.backup.HFileArchiver;
 import org.apache.hadoop.hbase.master.metrics.MasterMetrics;
 import org.apache.hadoop.hbase.regionserver.HRegion;
 import org.apache.hadoop.hbase.regionserver.RegionAlreadyInTransitionException;
-import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.FSHLog;
 import org.apache.hadoop.hbase.regionserver.wal.HLogSplitter;
 import org.apache.hadoop.hbase.regionserver.wal.OrphanHLogAfterSplitException;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -194,7 +194,7 @@ public class MasterFileSystem {
    */
   void splitLogAfterStartup() {
     boolean retrySplitting = !conf.getBoolean("hbase.hlog.split.skip.errors",
-        HLog.SPLIT_SKIP_ERRORS_DEFAULT);
+        FSHLog.SPLIT_SKIP_ERRORS_DEFAULT);
     Path logsDirPath = new Path(this.rootdir, HConstants.HREGION_LOGDIR_NAME);
     do {
       if (master.isStopped()) {
@@ -217,8 +217,8 @@ public class MasterFileSystem {
         for (FileStatus status : logFolders) {
           String sn = status.getPath().getName();
           // truncate splitting suffix if present (for ServerName parsing)
-          if (sn.endsWith(HLog.SPLITTING_EXT)) {
-            sn = sn.substring(0, sn.length() - HLog.SPLITTING_EXT.length());
+          if (sn.endsWith(FSHLog.SPLITTING_EXT)) {
+            sn = sn.substring(0, sn.length() - FSHLog.SPLITTING_EXT.length());
           }
           ServerName serverName = ServerName.parseServerName(sn);
           if (!onlineServers.contains(serverName)) {
@@ -263,8 +263,8 @@ public class MasterFileSystem {
     long splitTime = 0, splitLogSize = 0;
     List<Path> logDirs = new ArrayList<Path>();
     for (ServerName serverName: serverNames) {
-      Path logDir = new Path(this.rootdir, HLog.getHLogDirectoryName(serverName.toString()));
-      Path splitDir = logDir.suffix(HLog.SPLITTING_EXT);
+      Path logDir = new Path(this.rootdir, FSHLog.getHLogDirectoryName(serverName.toString()));
+      Path splitDir = logDir.suffix(FSHLog.SPLITTING_EXT);
       // Rename the directory so a rogue RS doesn't create more HLogs
       if (fs.exists(logDir)) {
         if (!this.fs.rename(logDir, splitDir)) {

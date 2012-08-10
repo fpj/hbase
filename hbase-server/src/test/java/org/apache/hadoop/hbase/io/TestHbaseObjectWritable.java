@@ -85,7 +85,7 @@ import org.apache.hadoop.hbase.filter.WhileMatchFilter;
 import org.apache.hadoop.hbase.filter.WritableByteArrayComparable;
 import org.apache.hadoop.hbase.regionserver.HRegion;
 import org.apache.hadoop.hbase.regionserver.RegionOpeningState;
-import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.FSHLog;
 import org.apache.hadoop.hbase.regionserver.wal.HLogKey;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.io.IntWritable;
@@ -497,8 +497,8 @@ public class TestHbaseObjectWritable extends TestCase {
 
     assertEquals(57,HbaseObjectWritable.getClassCode(Delete [].class).intValue());
 
-    assertEquals(58,HbaseObjectWritable.getClassCode(HLog.Entry.class).intValue());
-    assertEquals(59,HbaseObjectWritable.getClassCode(HLog.Entry[].class).intValue());
+    assertEquals(58,HbaseObjectWritable.getClassCode(FSHLog.Entry.class).intValue());
+    assertEquals(59,HbaseObjectWritable.getClassCode(FSHLog.Entry[].class).intValue());
     assertEquals(60,HbaseObjectWritable.getClassCode(HLogKey.class).intValue());
 
     assertEquals(61,HbaseObjectWritable.getClassCode(List.class).intValue());

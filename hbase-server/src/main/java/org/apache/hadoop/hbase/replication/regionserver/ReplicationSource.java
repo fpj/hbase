@@ -52,7 +52,7 @@ import org.apache.hadoop.hbase.client.AdminProtocol;
 import org.apache.hadoop.hbase.client.HConnection;
 import org.apache.hadoop.hbase.client.HConnectionManager;
 import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
-import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.FSHLog;
 import org.apache.hadoop.hbase.regionserver.wal.HLogKey;
 import org.apache.hadoop.hbase.regionserver.wal.WALEdit;
 import org.apache.hadoop.hbase.replication.ReplicationZookeeper;
@@ -83,7 +83,7 @@ public class ReplicationSource extends Thread
   // Queue of logs to process
   private PriorityBlockingQueue<Path> queue;
   // container of entries to replicate
-  private HLog.Entry[] entriesArray;
+  private FSHLog.Entry[] entriesArray;
   private HConnection conn;
   // Helper class for zookeeper
   private ReplicationZookeeper zkHelper;
@@ -108,7 +108,7 @@ public class ReplicationSource extends Thread
   // Max number of entries in entriesArray
   private int replicationQueueNbCapacity;
   // Our reader for the current log
-  private HLog.Reader reader;
+  private FSHLog.Reader reader;
   // Current position in the log
   private long position = 0;
   // Last position in the log that we sent to ZooKeeper
@@ -165,9 +165,9 @@ public class ReplicationSource extends Thread
         this.conf.getLong("replication.source.size.capacity", 1024*1024*64);
     this.replicationQueueNbCapacity =
         this.conf.getInt("replication.source.nb.capacity", 25000);
-    this.entriesArray = new HLog.Entry[this.replicationQueueNbCapacity];
+    this.entriesArray = new FSHLog.Entry[this.replicationQueueNbCapacity];
     for (int i = 0; i < this.replicationQueueNbCapacity; i++) {
-      this.entriesArray[i] = new HLog.Entry();
+      this.entriesArray[i] = new FSHLog.Entry();
     }
     this.maxRetriesMultiplier =
         this.conf.getInt("replication.source.maxretriesmultiplier", 10);
@@ -393,7 +393,7 @@ public class ReplicationSource extends Thread
     if (this.position != 0) {
       this.reader.seek(this.position);
     }
-    HLog.Entry entry = this.reader.next(this.entriesArray[currentNbEntries]);
+    FSHLog.Entry entry = this.reader.next(this.entriesArray[currentNbEntries]);
     while (entry != null) {
       WALEdit edit = entry.getEdit();
       this.metrics.incrLogEditsRead();
@@ -478,7 +478,7 @@ public class ReplicationSource extends Thread
           " at " + this.position);
       try {
        this.reader = null;
-       this.reader = HLog.getReader(this.fs, this.currentPath, this.conf);
+       this.reader = FSHLog.getReader(this.fs, this.currentPath, this.conf);
       } catch (FileNotFoundException fnfe) {
         if (this.queueRecovered) {
           // We didn't find the log in the archive directory, look if it still
@@ -491,7 +491,7 @@ public class ReplicationSource extends Thread
                 new Path(manager.getLogDir().getParent(), this.deadRegionServers[i]);
             Path[] locs = new Path[] {
                 new Path(deadRsDirectory, currentPath.getName()),
-                new Path(deadRsDirectory.suffix(HLog.SPLITTING_EXT),
+                new Path(deadRsDirectory.suffix(FSHLog.SPLITTING_EXT),
                                           currentPath.getName()),
             };
             for (Path possibleLogLocation : locs) {
