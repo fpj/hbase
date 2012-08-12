@@ -36,6 +36,7 @@ import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLogFactory;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.PairOfSameType;
 import org.apache.zookeeper.KeeperException;
@@ -66,7 +67,7 @@ public class TestSplitTransaction {
   @Before public void setup() throws IOException {
     this.fs = FileSystem.get(TEST_UTIL.getConfiguration());
     this.fs.delete(this.testdir, true);
-    this.wal = new HLog(fs, new Path(this.testdir, "logs"),
+    this.wal = HLogFactory.getHLog(fs, new Path(this.testdir, "logs"),
       new Path(this.testdir, "archive"),
       TEST_UTIL.getConfiguration());
     this.parent = createRegion(this.testdir, this.wal);

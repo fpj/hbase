@@ -39,7 +39,7 @@ import org.apache.hadoop.hbase.client.Delete;
 import org.apache.hadoop.hbase.client.Get;
 import org.apache.hadoop.hbase.client.HBaseAdmin;
 import org.apache.hadoop.hbase.regionserver.HRegion;
-import org.apache.hadoop.hbase.regionserver.wal.FSHLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLog;
 import org.apache.hadoop.io.WritableComparator;
 import org.apache.hadoop.util.GenericOptionsParser;
 import org.apache.hadoop.util.Tool;
@@ -294,7 +294,7 @@ public class Merge extends Configured implements Tool {
           Bytes.toStringBinary(meta2.getRegionName()));
     }
     HRegion merged = null;
-    FSHLog log = utils.getLog();
+    HLog log = utils.getLog();
     HRegion r1 = HRegion.openHRegion(info1, htd, log, getConf());
     try {
       HRegion r2 = HRegion.openHRegion(info2, htd, log, getConf());

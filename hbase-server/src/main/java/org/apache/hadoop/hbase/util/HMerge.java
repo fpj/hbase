@@ -49,7 +49,8 @@ import org.apache.hadoop.hbase.client.ResultScanner;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.regionserver.HRegion;
 import org.apache.hadoop.hbase.regionserver.InternalScanner;
-import org.apache.hadoop.hbase.regionserver.wal.FSHLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLogFactory;
 
 /**
  * A non-instantiable class that has a static method capable of compacting
@@ -139,7 +140,7 @@ class HMerge {
     protected final FileSystem fs;
     protected final Path tabledir;
     protected final HTableDescriptor htd;
-    protected final FSHLog hlog;
+    protected final HLog hlog;
     private final long maxFilesize;
 
 
@@ -158,7 +159,7 @@ class HMerge {
       Path logdir = new Path(tabledir, "merge_" + System.currentTimeMillis() +
           HConstants.HREGION_LOGDIR_NAME);
       Path oldLogDir = new Path(tabledir, HConstants.HREGION_OLDLOGDIR_NAME);
-      this.hlog = new FSHLog(fs, logdir, oldLogDir, conf);
+      this.hlog = HLogFactory.getHLog(fs, logdir, oldLogDir, conf);
     }
 
     void process() throws IOException {

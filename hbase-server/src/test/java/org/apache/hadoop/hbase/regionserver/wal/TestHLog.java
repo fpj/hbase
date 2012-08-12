@@ -158,7 +158,7 @@ public class TestHLog  {
     final byte [] tableName = Bytes.toBytes(getName());
     final byte [] rowName = tableName;
     Path logdir = new Path(hbaseDir, HConstants.HREGION_LOGDIR_NAME);
-    HLog log = new HLog(fs, logdir, oldLogDir, conf);
+    HLog log = HLogFactory.getHLog(fs, logdir, oldLogDir, conf);
     final int howmany = 3;
     HRegionInfo[] infos = new HRegionInfo[3];
     Path tabledir = new Path(hbaseDir, getName());
@@ -236,7 +236,7 @@ public class TestHLog  {
     out.close();
     in.close();
     Path subdir = new Path(dir, "hlogdir");
-    HLog wal = new HLog(fs, subdir, oldLogDir, conf);
+    HLog wal = HLogFactory.getHLog(fs, subdir, oldLogDir, conf);
     final int total = 20;
     HLog.Reader reader = null;
 
@@ -255,8 +255,8 @@ public class TestHLog  {
       // gives you EOFE.
       wal.sync();
       // Open a Reader.
-      Path walPath = wal.computeFilename();
-      reader = HLog.getReader(fs, walPath, conf);
+      Path walPath = ((FSHLog) wal).computeFilename();
+      reader = HLogUtil.getReader(fs, walPath, conf);
       int count = 0;
       HLog.Entry entry = new HLog.Entry();
       while ((entry = reader.next(entry)) != null) count++;
@@ -269,14 +269,14 @@ public class TestHLog  {
         kvs.add(new KeyValue(Bytes.toBytes(i), bytes, bytes));
         wal.append(info, bytes, kvs, System.currentTimeMillis(), htd);
       }
-      reader = HLog.getReader(fs, walPath, conf);
+      reader = HLogUtil.getReader(fs, walPath, conf);
       count = 0;
       while((entry = reader.next(entry)) != null) count++;
       assertTrue(count >= total);
       reader.close();
       // If I sync, should see double the edits.
       wal.sync();
-      reader = HLog.getReader(fs, walPath, conf);
+      reader = HLogUtil.getReader(fs, walPath, conf);
       count = 0;
       while((entry = reader.next(entry)) != null) count++;
       assertEquals(total * 2, count);
@@ -290,14 +290,14 @@ public class TestHLog  {
       }
       // Now I should have written out lots of blocks.  Sync then read.
       wal.sync();
-      reader = HLog.getReader(fs, walPath, conf);
+      reader = HLogUtil.getReader(fs, walPath, conf);
       count = 0;
       while((entry = reader.next(entry)) != null) count++;
       assertEquals(total * 3, count);
       reader.close();
       // Close it and ensure that closed, Reader gets right length also.
       wal.close();
-      reader = HLog.getReader(fs, walPath, conf);
+      reader = HLogUtil.getReader(fs, walPath, conf);
       count = 0;
       while((entry = reader.next(entry)) != null) count++;
       assertEquals(total * 3, count);
@@ -320,11 +320,11 @@ public class TestHLog  {
       regionsToSeqids.put(l.toString().getBytes(), l);
     }
     byte [][] regions =
-      HLog.findMemstoresWithEditsEqualOrOlderThan(1, regionsToSeqids);
+      HLogUtil.findMemstoresWithEditsEqualOrOlderThan(1, regionsToSeqids);
     assertEquals(2, regions.length);
     assertTrue(Bytes.equals(regions[0], "0".getBytes()) ||
         Bytes.equals(regions[0], "1".getBytes()));
-    regions = HLog.findMemstoresWithEditsEqualOrOlderThan(3, regionsToSeqids);
+    regions = HLogUtil.findMemstoresWithEditsEqualOrOlderThan(3, regionsToSeqids);
     int count = 4;
     assertEquals(count, regions.length);
     // Regions returned are not ordered.
@@ -341,7 +341,7 @@ public class TestHLog  {
     assertEquals(howmany, splits.size());
     for (int i = 0; i < splits.size(); i++) {
       LOG.info("Verifying=" + splits.get(i));
-      HLog.Reader reader = HLog.getReader(fs, splits.get(i), conf);
+      HLog.Reader reader = HLogUtil.getReader(fs, splits.get(i), conf);
       try {
         int count = 0;
         String previousRegion = null;
@@ -379,7 +379,7 @@ public class TestHLog  {
              HConstants.EMPTY_START_ROW, HConstants.EMPTY_END_ROW, false);
     Path subdir = new Path(dir, "hlogdir");
     Path archdir = new Path(dir, "hlogdir_archive");
-    HLog wal = new HLog(fs, subdir, archdir, conf);
+    HLog wal = HLogFactory.getHLog(fs, subdir, archdir, conf);
     final int total = 20;
 
     HTableDescriptor htd = new HTableDescriptor();
@@ -393,7 +393,7 @@ public class TestHLog  {
     // Now call sync to send the data to HDFS datanodes
     wal.sync();
      int namenodePort = cluster.getNameNodePort();
-    final Path walPath = wal.computeFilename();
+    final Path walPath = ((FSHLog) wal).computeFilename();
     
 
     // Stop the cluster.  (ensure restart since we're sharing MiniDFSCluster)
@@ -477,7 +477,7 @@ public class TestHLog  {
     SequenceFile.Reader reader
       = new SequenceFile.Reader(this.fs, walPath, this.conf);
     int count = 0;
-    HLogKey key = HLog.newKey(conf);
+    HLogKey key = HLogUtil.newKey(conf);
     WALEdit val = new WALEdit();
     while (reader.next(key, val)) {
       count++;
@@ -500,7 +500,7 @@ public class TestHLog  {
     HLog.Reader reader = null;
     HLog log = null;
     try {
-      log = new HLog(fs, dir, oldLogDir, conf);
+      log = HLogFactory.getHLog(fs, dir, oldLogDir, conf);
       // Write columns named 1, 2, 3, etc. and then values of single byte
       // 1, 2, 3...
       long timestamp = System.currentTimeMillis();
@@ -520,10 +520,10 @@ public class TestHLog  {
       log.completeCacheFlush(info.getEncodedNameAsBytes(), tableName, logSeqId,
           info.isMetaRegion());
       log.close();
-      Path filename = log.computeFilename();
+      Path filename = ((FSHLog) log).computeFilename();
       log = null;
       // Now open a reader on the log and assert append worked.
-      reader = HLog.getReader(fs, filename, conf);
+      reader = HLogUtil.getReader(fs, filename, conf);
       // Above we added all columns on a single row so we only read one
       // entry in the below... thats why we have '1'.
       for (int i = 0; i < 1; i++) {
@@ -546,9 +546,9 @@ public class TestHLog  {
         assertTrue(Bytes.equals(info.getEncodedNameAsBytes(), key.getEncodedRegionName()));
         assertTrue(Bytes.equals(tableName, key.getTablename()));
         KeyValue kv = val.getKeyValues().get(0);
-        assertTrue(Bytes.equals(HLog.METAROW, kv.getRow()));
-        assertTrue(Bytes.equals(HLog.METAFAMILY, kv.getFamily()));
-        assertEquals(0, Bytes.compareTo(HLog.COMPLETE_CACHE_FLUSH,
+        assertTrue(Bytes.equals(HLogUtil.METAROW, kv.getRow()));
+        assertTrue(Bytes.equals(HLogUtil.METAFAMILY, kv.getFamily()));
+        assertEquals(0, Bytes.compareTo(HLogUtil.COMPLETE_CACHE_FLUSH,
           val.getKeyValues().get(0).getValue()));
         System.out.println(key + " " + val);
       }
@@ -571,7 +571,7 @@ public class TestHLog  {
     final byte [] tableName = Bytes.toBytes("tablename");
     final byte [] row = Bytes.toBytes("row");
     Reader reader = null;
-    HLog log = new HLog(fs, dir, oldLogDir, conf);
+    HLog log = HLogFactory.getHLog(fs, dir, oldLogDir, conf);
     try {
       // Write columns named 1, 2, 3, etc. and then values of single byte
       // 1, 2, 3...
@@ -590,10 +590,10 @@ public class TestHLog  {
       long logSeqId = log.startCacheFlush(hri.getEncodedNameAsBytes());
       log.completeCacheFlush(hri.getEncodedNameAsBytes(), tableName, logSeqId, false);
       log.close();
-      Path filename = log.computeFilename();
+      Path filename = ((FSHLog) log).computeFilename();
       log = null;
       // Now open a reader on the log and assert append worked.
-      reader = HLog.getReader(fs, filename, conf);
+      reader = HLogUtil.getReader(fs, filename, conf);
       HLog.Entry entry = reader.next();
       assertEquals(COL_COUNT, entry.getEdit().size());
       int idx = 0;
@@ -614,9 +614,9 @@ public class TestHLog  {
         assertTrue(Bytes.equals(hri.getEncodedNameAsBytes(),
           entry.getKey().getEncodedRegionName()));
         assertTrue(Bytes.equals(tableName, entry.getKey().getTablename()));
-        assertTrue(Bytes.equals(HLog.METAROW, val.getRow()));
-        assertTrue(Bytes.equals(HLog.METAFAMILY, val.getFamily()));
-        assertEquals(0, Bytes.compareTo(HLog.COMPLETE_CACHE_FLUSH,
+        assertTrue(Bytes.equals(HLogUtil.METAROW, val.getRow()));
+        assertTrue(Bytes.equals(HLogUtil.METAFAMILY, val.getFamily()));
+        assertEquals(0, Bytes.compareTo(HLogUtil.COMPLETE_CACHE_FLUSH,
           val.getValue()));
         System.out.println(entry.getKey() + " " + val);
       }
@@ -639,7 +639,7 @@ public class TestHLog  {
     final int COL_COUNT = 10;
     final byte [] tableName = Bytes.toBytes("tablename");
     final byte [] row = Bytes.toBytes("row");
-    HLog log = new HLog(fs, dir, oldLogDir, conf);
+    HLog log = HLogFactory.getHLog(fs, dir, oldLogDir, conf);
     try {
       DumbWALActionsListener visitor = new DumbWALActionsListener();
       log.registerWALActionsListener(visitor);
@@ -675,7 +675,7 @@ public class TestHLog  {
     final byte [] tableName = Bytes.toBytes("testLogCleaning");
     final byte [] tableName2 = Bytes.toBytes("testLogCleaning2");
 
-    HLog log = new HLog(fs, dir, oldLogDir, conf);
+    HLog log = HLogFactory.getHLog(fs, dir, oldLogDir, conf);
     try {
       HRegionInfo hri = new HRegionInfo(tableName,
           HConstants.EMPTY_START_ROW, HConstants.EMPTY_END_ROW);
@@ -686,12 +686,12 @@ public class TestHLog  {
       // Before HBASE-3198 it used to delete it
       addEdits(log, hri, tableName, 1);
       log.rollWriter();
-      assertEquals(1, log.getNumLogFiles());
+      assertEquals(1, ((FSHLog) log).getNumLogFiles());
 
       // See if there's anything wrong with more than 1 edit
       addEdits(log, hri, tableName, 2);
       log.rollWriter();
-      assertEquals(2, log.getNumLogFiles());
+      assertEquals(2, ((FSHLog) log).getNumLogFiles());
 
       // Now mix edits from 2 regions, still no flushing
       addEdits(log, hri, tableName, 1);
@@ -699,14 +699,14 @@ public class TestHLog  {
       addEdits(log, hri, tableName, 1);
       addEdits(log, hri2, tableName2, 1);
       log.rollWriter();
-      assertEquals(3, log.getNumLogFiles());
+      assertEquals(3, ((FSHLog) log).getNumLogFiles());
 
       // Flush the first region, we expect to see the first two files getting
       // archived
       long seqId = log.startCacheFlush(hri.getEncodedNameAsBytes());
       log.completeCacheFlush(hri.getEncodedNameAsBytes(), tableName, seqId, false);
       log.rollWriter();
-      assertEquals(2, log.getNumLogFiles());
+      assertEquals(2, ((FSHLog) log).getNumLogFiles());
 
       // Flush the second region, which removes all the remaining output files
       // since the oldest was completely flushed and the two others only contain
@@ -714,7 +714,7 @@ public class TestHLog  {
       seqId = log.startCacheFlush(hri2.getEncodedNameAsBytes());
       log.completeCacheFlush(hri2.getEncodedNameAsBytes(), tableName2, seqId, false);
       log.rollWriter();
-      assertEquals(0, log.getNumLogFiles());
+      assertEquals(0, ((FSHLog) log).getNumLogFiles());
     } finally {
       if (log != null) log.closeAndDelete();
     }
@@ -726,7 +726,7 @@ public class TestHLog  {
   @Test
   public void testWALCoprocessorLoaded() throws Exception {
     // test to see whether the coprocessor is loaded or not.
-    HLog log = new HLog(fs, dir, oldLogDir, conf);
+    HLog log = HLogFactory.getHLog(fs, dir, oldLogDir, conf);
     try {
       WALCoprocessorHost host = log.getCoprocessorHost();
       Coprocessor c = host.findCoprocessor(SampleRegionWALObserver.class.getName());

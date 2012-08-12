@@ -53,7 +53,7 @@ public class TestLogRollingNoCluster {
   public void testContendedLogRolling() throws IOException, InterruptedException {
     FileSystem fs = FileSystem.get(TEST_UTIL.getConfiguration());
     Path dir = TEST_UTIL.getDataTestDir();
-    HLog wal = new HLog(fs, new Path(dir, "logs"), new Path(dir, "oldlogs"),
+    HLog wal = HLogFactory.getHLog(fs, new Path(dir, "logs"), new Path(dir, "oldlogs"),
       TEST_UTIL.getConfiguration());
     Appender [] appenders = null;
 
@@ -113,7 +113,7 @@ public class TestLogRollingNoCluster {
         for (int i = 0; i < this.count; i++) {
           long now = System.currentTimeMillis();
           // Roll every ten edits if the log has anything in it.
-          if (i % 10 == 0 && this.wal.getNumEntries() > 0) {
+          if (i % 10 == 0 && ((FSHLog) this.wal).getNumEntries() > 0) {
             this.wal.rollWriter();
           }
           WALEdit edit = new WALEdit();

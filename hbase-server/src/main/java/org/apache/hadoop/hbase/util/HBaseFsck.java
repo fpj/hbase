@@ -79,7 +79,8 @@ import org.apache.hadoop.hbase.io.hfile.HFile;
 import org.apache.hadoop.hbase.master.MasterFileSystem;
 import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
 import org.apache.hadoop.hbase.regionserver.HRegion;
-import org.apache.hadoop.hbase.regionserver.wal.FSHLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLogUtil;
 import org.apache.hadoop.hbase.util.HBaseFsck.ErrorReporter.ERROR_CODE;
 import org.apache.hadoop.hbase.util.hbck.TableIntegrityErrorHandler;
 import org.apache.hadoop.hbase.util.hbck.TableIntegrityErrorHandlerImpl;
@@ -2849,7 +2850,7 @@ public class HBaseFsck {
             // This is special case if a region is left after split
             he.hdfsOnlyEdits = true;
             FileStatus[] subDirs = fs.listStatus(regionDir.getPath());
-            Path ePath = FSHLog.getRegionDirRecoveredEditsDir(regionDir.getPath());
+            Path ePath = HLogUtil.getRegionDirRecoveredEditsDir(regionDir.getPath());
             for (FileStatus subDir : subDirs) {
               String sdName = subDir.getPath().getName();
               if (!sdName.startsWith(".") && !sdName.equals(ePath.getName())) {

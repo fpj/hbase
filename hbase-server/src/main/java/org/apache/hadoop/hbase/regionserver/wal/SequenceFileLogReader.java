@@ -215,7 +215,7 @@ public class SequenceFileLogReader implements HLog.Reader {
     if (e == null) {
       HLogKey key;
       if (keyClass == null) {
-        key = FSHLog.newKey(conf);
+        key = HLogUtil.newKey(conf);
       } else {
         try {
           key = keyClass.newInstance();

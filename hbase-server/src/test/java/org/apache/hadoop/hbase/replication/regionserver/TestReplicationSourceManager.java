@@ -42,6 +42,7 @@ import org.apache.hadoop.hbase.Server;
 import org.apache.hadoop.hbase.ServerName;
 import org.apache.hadoop.hbase.catalog.CatalogTracker;
 import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLogFactory;
 import org.apache.hadoop.hbase.regionserver.wal.HLogKey;
 import org.apache.hadoop.hbase.regionserver.wal.WALActionsListener;
 import org.apache.hadoop.hbase.regionserver.wal.WALEdit;
@@ -167,7 +168,7 @@ public class TestReplicationSourceManager {
 
     List<WALActionsListener> listeners = new ArrayList<WALActionsListener>();
     listeners.add(replication);
-    HLog hlog = new HLog(fs, logDir, oldLogDir, conf, listeners,
+    HLog hlog = HLogFactory.getHLog(fs, logDir, oldLogDir, conf, listeners,
       URLEncoder.encode("regionserver:60020", "UTF8"));
 
     manager.init();

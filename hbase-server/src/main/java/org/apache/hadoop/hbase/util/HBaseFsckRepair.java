@@ -42,7 +42,7 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.master.RegionState;
 import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
 import org.apache.hadoop.hbase.regionserver.HRegion;
-import org.apache.hadoop.hbase.regionserver.wal.FSHLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLog;
 import org.apache.zookeeper.KeeperException;
 
 /**
@@ -190,7 +190,7 @@ public class HBaseFsckRepair {
     // Create HRegion
     Path root = FSUtils.getRootDir(conf);
     HRegion region = HRegion.createHRegion(hri, root, conf, htd);
-    FSHLog hlog = region.getLog();
+    HLog hlog = region.getLog();
 
     // Close the new region to flush to disk. Close log file too.
     region.close();

@@ -117,8 +117,8 @@ import org.apache.hadoop.hbase.regionserver.compactions.CompactionRequest;
 import org.apache.hadoop.hbase.regionserver.metrics.OperationMetrics;
 import org.apache.hadoop.hbase.regionserver.metrics.RegionMetricsStorage;
 import org.apache.hadoop.hbase.regionserver.metrics.SchemaMetrics;
-import org.apache.hadoop.hbase.regionserver.wal.FSHLog;
 import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLogFactory;
 import org.apache.hadoop.hbase.regionserver.wal.HLogKey;
 import org.apache.hadoop.hbase.regionserver.wal.HLogUtil;
 import org.apache.hadoop.hbase.regionserver.wal.WALEdit;
@@ -2829,7 +2829,7 @@ public class HRegion implements HeapSize { // , Writable{
       }
     }
     long seqid = minSeqIdForTheRegion;
-    NavigableSet<Path> files = FSHLog.getSplitEditFilesSorted(this.fs, regiondir);
+    NavigableSet<Path> files = HLogUtil.getSplitEditFilesSorted(this.fs, regiondir);
     if (files == null || files.isEmpty()) return seqid;
 
     for (Path edits: files) {
@@ -2912,7 +2912,7 @@ public class HRegion implements HeapSize { // , Writable{
     status.setStatus("Opening logs");
     HLog.Reader reader = null;
     try {
-      reader = FSHLog.getReader(this.fs, edits, conf);
+      reader = HLogUtil.getReader(this.fs, edits, conf);
       long currentEditSeqId = -1;
       long firstSeqIdInLog = -1;
       long skippedEdits = 0;
@@ -3819,7 +3819,7 @@ public class HRegion implements HeapSize { // , Writable{
     fs.mkdirs(regionDir);
     HLog effectiveHLog = hlog;
     if (hlog == null && !ignoreHLog) {
-      effectiveHLog = new FSHLog(fs, new Path(regionDir, HConstants.HREGION_LOGDIR_NAME),
+      effectiveHLog = HLogFactory.getHLog(fs, new Path(regionDir, HConstants.HREGION_LOGDIR_NAME),
           new Path(regionDir, HConstants.HREGION_OLDLOGDIR_NAME), conf);
     }
     HRegion region = HRegion.newHRegion(tableDir,
@@ -5439,7 +5439,7 @@ public class HRegion implements HeapSize { // , Writable{
         + EnvironmentEdgeManager.currentTimeMillis());
     final Path oldLogDir = new Path(c.get("hbase.tmp.dir"),
         HConstants.HREGION_OLDLOGDIR_NAME);
-    final HLog log = new FSHLog(fs, logdir, oldLogDir, c);
+    final HLog log = HLogFactory.getHLog(fs, logdir, oldLogDir, c);
     try {
       processTable(fs, tableDir, log, c, majorCompact);
     } finally {

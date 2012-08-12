@@ -46,7 +46,8 @@ import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.client.Scan;
 import org.apache.hadoop.hbase.regionserver.HRegion;
 import org.apache.hadoop.hbase.regionserver.InternalScanner;
-import org.apache.hadoop.hbase.regionserver.wal.FSHLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLogFactory;
 
 /**
  * Contains utility methods for manipulating HBase meta tables.
@@ -60,7 +61,7 @@ public class MetaUtils {
   private static final Log LOG = LogFactory.getLog(MetaUtils.class);
   private final Configuration conf;
   private FileSystem fs;
-  private FSHLog log;
+  private HLog log;
   private HRegion rootRegion;
   private Map<byte [], HRegion> metaRegions = Collections.synchronizedSortedMap(
     new TreeMap<byte [], HRegion>(Bytes.BYTES_COMPARATOR));
@@ -95,13 +96,13 @@ public class MetaUtils {
    * @return the HLog
    * @throws IOException e
    */
-  public synchronized FSHLog getLog() throws IOException {
+  public synchronized HLog getLog() throws IOException {
     if (this.log == null) {
       Path logdir = new Path(this.fs.getHomeDirectory(),
           HConstants.HREGION_LOGDIR_NAME + "_" + System.currentTimeMillis());
       Path oldLogDir = new Path(this.fs.getHomeDirectory(),
           HConstants.HREGION_OLDLOGDIR_NAME);
-      this.log = new FSHLog(this.fs, logdir, oldLogDir, this.conf);
+      this.log = HLogFactory.getHLog(this.fs, logdir, oldLogDir, this.conf);
     }
     return this.log;
   }

@@ -48,6 +48,7 @@ import org.apache.hadoop.hbase.regionserver.BaseRowProcessor;
 import org.apache.hadoop.hbase.regionserver.HRegion;
 import org.apache.hadoop.hbase.regionserver.InternalScanner;
 import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLogUtil;
 import org.apache.hadoop.hbase.regionserver.wal.WALEdit;
 import org.apache.hadoop.hbase.util.Bytes;
 
@@ -322,7 +323,7 @@ public class TestRowProcessorEndpoint {
 
         // We can also inject some meta data to the walEdit
         KeyValue metaKv = new KeyValue(
-            row, HLog.METAFAMILY,
+            row, HLogUtil.METAFAMILY,
             Bytes.toBytes("I just increment counter"),
             Bytes.toBytes(counter));
         walEdit.add(metaKv);

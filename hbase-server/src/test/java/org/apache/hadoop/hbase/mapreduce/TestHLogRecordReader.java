@@ -36,6 +36,7 @@ import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.MediumTests;
 import org.apache.hadoop.hbase.mapreduce.HLogInputFormat.HLogRecordReader;
 import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLogFactory;
 import org.apache.hadoop.hbase.regionserver.wal.WALEdit;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.mapreduce.InputSplit;
@@ -107,7 +108,7 @@ public class TestHLogRecordReader {
    */
   @Test
   public void testPartialRead() throws Exception {
-    HLog log = new HLog(fs, logDir, oldLogDir, conf);
+    HLog log = HLogFactory.getHLog(fs, logDir, oldLogDir, conf);
     long ts = System.currentTimeMillis();
     WALEdit edit = new WALEdit();
     edit.add(new KeyValue(rowName, family, Bytes.toBytes("1"),
@@ -163,7 +164,7 @@ public class TestHLogRecordReader {
    */
   @Test
   public void testHLogRecordReader() throws Exception {
-    HLog log = new HLog(fs, logDir, oldLogDir, conf);
+    HLog log = HLogFactory.getHLog(fs, logDir, oldLogDir, conf);
     byte [] value = Bytes.toBytes("value");
     WALEdit edit = new WALEdit();
     edit.add(new KeyValue(rowName, family, Bytes.toBytes("1"),

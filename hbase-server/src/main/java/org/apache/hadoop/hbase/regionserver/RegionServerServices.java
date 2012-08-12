@@ -26,7 +26,7 @@ import org.apache.hadoop.classification.InterfaceAudience;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.hbase.catalog.CatalogTracker;
 import org.apache.hadoop.hbase.ipc.RpcServer;
-import org.apache.hadoop.hbase.regionserver.wal.FSHLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLog;
 import org.apache.zookeeper.KeeperException;
 
 /**
@@ -40,7 +40,7 @@ public interface RegionServerServices extends OnlineRegions {
   public boolean isStopping();
 
   /** @return the HLog */
-  public FSHLog getWAL();
+  public HLog getWAL();
 
   /**
    * @return Implementation of {@link CompactionRequestor} or null.

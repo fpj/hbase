@@ -52,6 +52,7 @@ import org.apache.hadoop.hbase.io.hfile.HFileScanner;
 import org.apache.hadoop.hbase.io.hfile.TestHFileWriterV2;
 import org.apache.hadoop.hbase.regionserver.StoreFile.BloomType;
 import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLogFactory;
 import org.apache.hadoop.hbase.util.Bytes;
 
 import org.junit.After;
@@ -162,7 +163,7 @@ public class TestCacheOnWriteInSchema {
     Path oldLogDir = new Path(basedir, HConstants.HREGION_OLDLOGDIR_NAME);
     fs.delete(logdir, true);
     HRegionInfo info = new HRegionInfo(htd.getName(), null, null, false);
-    HLog hlog = new HLog(fs, logdir, oldLogDir, conf);
+    HLog hlog = HLogFactory.getHLog(fs, logdir, oldLogDir, conf);
     HRegion region = new HRegion(basedir, hlog, fs, conf, info, htd, null);
     store = new Store(basedir, region, hcd, fs, conf);
   }

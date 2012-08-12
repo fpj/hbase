@@ -23,9 +23,12 @@ package org.apache.hadoop.hbase.regionserver.wal;
 import java.io.DataInput;
 import java.io.DataOutput;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.NavigableSet;
 import java.util.UUID;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -36,6 +39,7 @@ import org.apache.hadoop.hbase.regionserver.wal.HLogMetrics.Metric;
 import org.apache.hadoop.hbase.util.Bytes;
 
 public interface HLog {   
+    public static final Log LOG = LogFactory.getLog(HLog.class);
     
     public interface Reader {
         void init(FileSystem fs, Path path, Configuration c) throws IOException;
@@ -150,4 +154,14 @@ public interface HLog {
       throws IOException;
       public void abortCacheFlush(byte[] encodedRegionName);
       public WALCoprocessorHost getCoprocessorHost();
+      public boolean isLowReplicationRollEnabled();
+      
+      /*
+       * Package protected methods
+       */
+      //int getNumLogFiles();
+      //OutputStream getOutputStream();
+      //Path computeFilename();
+      //Path computeFilename(long filenum);
+      //boolean canGetCurReplicas();
 }

@@ -32,8 +32,9 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.apache.hadoop.hbase.regionserver.wal.FSHLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLog;
 import org.apache.hadoop.hbase.regionserver.wal.HLogKey;
+import org.apache.hadoop.hbase.regionserver.wal.HLogUtil;
 import org.apache.hadoop.hbase.regionserver.wal.WALEdit;
 import org.apache.hadoop.io.Writable;
 import org.apache.hadoop.mapreduce.InputFormat;
@@ -43,7 +44,7 @@ import org.apache.hadoop.mapreduce.RecordReader;
 import org.apache.hadoop.mapreduce.TaskAttemptContext;
 
 /**
- * Simple {@link InputFormat} for {@link FSHLog} files.
+ * Simple {@link InputFormat} for {@link HLog} files.
  */
 @InterfaceAudience.Public
 public class HLogInputFormat extends InputFormat<HLogKey, WALEdit> {
@@ -53,7 +54,7 @@ public class HLogInputFormat extends InputFormat<HLogKey, WALEdit> {
   public static String END_TIME_KEY = "hlog.end.time";
 
   /**
-   * {@link InputSplit} for {@link FSHLog} files. Each split represent
+   * {@link InputSplit} for {@link HLog} files. Each split represent
    * exactly one log file.
    */
   static class HLogSplit extends InputSplit implements Writable {
@@ -127,11 +128,11 @@ public class HLogInputFormat extends InputFormat<HLogKey, WALEdit> {
   }
 
   /**
-   * {@link RecordReader} for an {@link FSHLog} file.
+   * {@link RecordReader} for an {@link HLog} file.
    */
   static class HLogRecordReader extends RecordReader<HLogKey, WALEdit> {
-    private FSHLog.Reader reader = null;
-    private FSHLog.Entry currentEntry = new FSHLog.Entry();
+    private HLog.Reader reader = null;
+    private HLog.Entry currentEntry = new HLog.Entry();
     private long startTime;
     private long endTime;
 
@@ -143,7 +144,7 @@ public class HLogInputFormat extends InputFormat<HLogKey, WALEdit> {
       Configuration conf = context.getConfiguration();
       LOG.info("Opening reader for "+split);
       try {
-        this.reader = FSHLog.getReader(logFile.getFileSystem(conf), logFile, conf);
+        this.reader = HLogUtil.getReader(logFile.getFileSystem(conf), logFile, conf);
       } catch (EOFException x) {
         LOG.info("Ignoring corrupted HLog file: " + logFile
             + " (This is normal when a RegionServer crashed.)");
@@ -156,7 +157,7 @@ public class HLogInputFormat extends InputFormat<HLogKey, WALEdit> {
     public boolean nextKeyValue() throws IOException, InterruptedException {
       if (reader == null) return false;
 
-      FSHLog.Entry temp;
+      HLog.Entry temp;
       long i = -1;
       do {
         // skip older entries

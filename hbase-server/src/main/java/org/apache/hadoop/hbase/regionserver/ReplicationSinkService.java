@@ -22,7 +22,7 @@ package org.apache.hadoop.hbase.regionserver;
 import java.io.IOException;
 
 import org.apache.hadoop.classification.InterfaceAudience;
-import org.apache.hadoop.hbase.regionserver.wal.FSHLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLog;
 
 /**
  * A sink for a replication stream has to expose this service.
@@ -37,5 +37,5 @@ public interface ReplicationSinkService extends ReplicationService {
    * @param entries list of entries to replicate
    * @throws IOException
    */
-  public void replicateLogEntries(FSHLog.Entry[] entries) throws IOException;
+  public void replicateLogEntries(HLog.Entry[] entries) throws IOException;
 }

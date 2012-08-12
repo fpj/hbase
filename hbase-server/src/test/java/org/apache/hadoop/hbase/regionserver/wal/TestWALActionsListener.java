@@ -86,7 +86,7 @@ public class TestWALActionsListener {
     List<WALActionsListener> list = new ArrayList<WALActionsListener>();
     list.add(observer);
     DummyWALActionsListener laterobserver = new DummyWALActionsListener();
-    HLog hlog = new HLog(fs, logDir, oldLogDir, conf, list, null);
+    HLog hlog = HLogFactory.getHLog(fs, logDir, oldLogDir, conf, list, null);
     HRegionInfo hri = new HRegionInfo(SOME_BYTES,
              SOME_BYTES, SOME_BYTES, false);
 

@@ -29,6 +29,7 @@ import org.apache.hadoop.hbase.*;
 import org.apache.hadoop.hbase.regionserver.HRegion;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLogFactory;
 import org.apache.hadoop.hbase.regionserver.wal.HLogSplitter;
 import org.apache.hadoop.hbase.regionserver.wal.WALCoprocessorHost;
 import org.apache.hadoop.hbase.regionserver.wal.WALEdit;
@@ -139,7 +140,7 @@ public class TestWALObserver {
     deleteDir(basedir);
     fs.mkdirs(new Path(basedir, hri.getEncodedName()));
 
-    HLog log = new HLog(this.fs, this.dir, this.oldLogDir, this.conf);
+    HLog log = HLogFactory.getHLog(this.fs, this.dir, this.oldLogDir, this.conf);
     SampleRegionWALObserver cp = getCoprocessor(log);
 
     // TEST_FAMILY[0] shall be removed from WALEdit.
@@ -286,7 +287,7 @@ public class TestWALObserver {
    */
   @Test
   public void testWALObserverLoaded() throws Exception {
-    HLog log = new HLog(fs, dir, oldLogDir, conf);
+    HLog log = HLogFactory.getHLog(fs, dir, oldLogDir, conf);
     assertNotNull(getCoprocessor(log));
   }
 
@@ -358,7 +359,7 @@ public class TestWALObserver {
     return splits.get(0);
   }
   private HLog createWAL(final Configuration c) throws IOException {
-    HLog wal = new HLog(FileSystem.get(c), logDir, oldLogDir, c);
+    HLog wal = HLogFactory.getHLog(FileSystem.get(c), logDir, oldLogDir, c);
     return wal;
   }
   private void addWALEdits (final byte [] tableName, final HRegionInfo hri,

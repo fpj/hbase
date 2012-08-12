@@ -87,7 +87,7 @@ import org.apache.hadoop.hbase.filter.WhileMatchFilter;
 import org.apache.hadoop.hbase.filter.WritableByteArrayComparable;
 import org.apache.hadoop.hbase.regionserver.HRegion;
 import org.apache.hadoop.hbase.regionserver.RegionOpeningState;
-import org.apache.hadoop.hbase.regionserver.wal.FSHLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLog;
 import org.apache.hadoop.hbase.regionserver.wal.HLogKey;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.hadoop.hbase.util.ProtoUtil;
@@ -222,8 +222,8 @@ public class HbaseObjectWritable implements Writable, WritableWithSize, Configur
 
     addToMap(Delete [].class, code++);
 
-    addToMap(FSHLog.Entry.class, code++);
-    addToMap(FSHLog.Entry[].class, code++);
+    addToMap(HLog.Entry.class, code++);
+    addToMap(HLog.Entry[].class, code++);
     addToMap(HLogKey.class, code++);
 
     addToMap(List.class, code++);

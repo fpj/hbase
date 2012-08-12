@@ -21,6 +21,10 @@
 package org.apache.hadoop.hbase.regionserver.wal;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.NavigableSet;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
@@ -46,6 +50,17 @@ public class HLogUtil {
     static final Log LOG = LogFactory.getLog(HLogUtil.class);
     
     public static final byte [] METAFAMILY = Bytes.toBytes("METAFAMILY");
+    static final byte [] METAROW = Bytes.toBytes("METAROW");
+    
+    static byte [] COMPLETE_CACHE_FLUSH;
+    static {
+      try {
+        COMPLETE_CACHE_FLUSH =
+          "HBASE::CACHEFLUSH".getBytes(HConstants.UTF8_ENCODING);
+      } catch (UnsupportedEncodingException e) {
+        assert(false);
+      }
+    }
     
     /** File Extension used while splitting an HLog into regions (HBASE-2312) */
     public static final String SPLITTING_EXT = "-splitting";
@@ -59,6 +74,13 @@ public class HLogUtil {
     static final Pattern EDITFILES_NAME_PATTERN =
       Pattern.compile("-?[0-9]+");
     static final String RECOVERED_LOG_TMPFILE_SUFFIX = ".temp";
+    
+    private static Class<? extends Writer> logWriterClass;
+    private static Class<? extends Reader> logReaderClass;
+    
+    static void resetLogReaderClass() {
+        logReaderClass = null;
+      }
     
     /**
      * @param family
@@ -97,6 +119,60 @@ public class HLogUtil {
      */
     public static boolean validateHLogFilename(String filename) {
       return pattern.matcher(filename).matches();
+    }
+    
+    /**
+     * Get a reader for the WAL.
+     * @param fs
+     * @param path
+     * @param conf
+     * @return A WAL reader.  Close when done with it.
+     * @throws IOException
+     */
+    public static HLog.Reader getReader(final FileSystem fs,
+      final Path path, Configuration conf)
+    throws IOException {
+      try {
+
+        if (logReaderClass == null) {
+
+          logReaderClass = conf.getClass("hbase.regionserver.hlog.reader.impl",
+              SequenceFileLogReader.class, Reader.class);
+        }
+
+
+        HLog.Reader reader = logReaderClass.newInstance();
+        reader.init(fs, path, conf);
+        return reader;
+      } catch (IOException e) {
+        throw e;
+      }
+      catch (Exception e) {
+        throw new IOException("Cannot get log reader", e);
+      }
+    }
+    
+    /**
+     * Get a writer for the WAL.
+     * @param path
+     * @param conf
+     * @return A WAL writer.  Close when done with it.
+     * @throws IOException
+     */
+    public static HLog.Writer createWriter(final FileSystem fs,
+        final Path path, Configuration conf)
+    throws IOException {
+      try {
+        if (logWriterClass == null) {
+          logWriterClass = conf.getClass("hbase.regionserver.hlog.writer.impl",
+              SequenceFileLogWriter.class, Writer.class);
+        }
+        FSHLog.Writer writer = (FSHLog.Writer) logWriterClass.newInstance();
+        writer.init(fs, path, conf);
+        return writer;
+      } catch (Exception e) {
+        throw new IOException("cannot get log writer", e);
+      }
     }
     
     /**
@@ -181,6 +257,29 @@ public class HLogUtil {
         LOG.warn("Rename failed from " + edits + " to " + moveAsideName);
       }
       return moveAsideName;
+    }
+    
+    /**
+     * Return regions (memstores) that have edits that are equal or less than
+     * the passed <code>oldestWALseqid</code>.
+     * @param oldestWALseqid
+     * @param regionsToSeqids Encoded region names to sequence ids
+     * @return All regions whose seqid is < than <code>oldestWALseqid</code> (Not
+     * necessarily in order).  Null if no regions found.
+     */
+    static byte [][] findMemstoresWithEditsEqualOrOlderThan(final long oldestWALseqid,
+        final Map<byte [], Long> regionsToSeqids) {
+      //  This method is static so it can be unit tested the easier.
+      List<byte []> regions = null;
+      for (Map.Entry<byte [], Long> e: regionsToSeqids.entrySet()) {
+        if (e.getValue().longValue() <= oldestWALseqid) {
+          if (regions == null) regions = new ArrayList<byte []>();
+          // Key is encoded region name.
+          regions.add(e.getKey());
+        }
+      }
+      return regions == null?
+        null: regions.toArray(new byte [][] {HConstants.EMPTY_BYTE_ARRAY});
     }
 
 }

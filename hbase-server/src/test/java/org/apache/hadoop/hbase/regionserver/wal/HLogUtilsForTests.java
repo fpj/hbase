@@ -37,10 +37,10 @@ public class HLogUtilsForTests {
    * @return
    */
   public static int getNumLogFiles(HLog log) {
-    return log.getNumLogFiles();
+    return ((FSHLog) log).getNumLogFiles();
   }
 
   public static int getNumEntries(HLog log) {
-    return log.getNumEntries();
+    return ((FSHLog) log).getNumEntries();
   }
 }

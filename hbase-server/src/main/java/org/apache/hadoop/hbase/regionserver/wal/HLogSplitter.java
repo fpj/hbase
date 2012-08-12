@@ -733,7 +733,7 @@ public class HLogSplitter {
    */
   protected Writer createWriter(FileSystem fs, Path logfile, Configuration conf)
       throws IOException {
-    return FSHLog.createWriter(fs, logfile, conf);
+    return HLogUtil.createWriter(fs, logfile, conf);
   }
 
   /**
@@ -741,7 +741,7 @@ public class HLogSplitter {
    */
   protected Reader getReader(FileSystem fs, Path curLogFile, Configuration conf)
       throws IOException {
-    return FSHLog.getReader(fs, curLogFile, conf);
+    return HLogUtil.getReader(fs, curLogFile, conf);
   }
 
   /**

@@ -114,10 +114,8 @@ import org.apache.hadoop.util.StringUtils;
  *
  */
 @InterfaceAudience.Private
-public class FSHLog implements HLog, Syncable {
+class FSHLog implements HLog, Syncable {
   static final Log LOG = LogFactory.getLog(FSHLog.class);
-  
-  static final byte [] METAROW = Bytes.toBytes("METAROW");
   
   private final FileSystem fs;
   private final Path dir;
@@ -134,14 +132,7 @@ public class FSHLog implements HLog, Syncable {
   private final Path oldLogDir;
   private volatile boolean logRollRunning;
 
-  private static Class<? extends Writer> logWriterClass;
-  private static Class<? extends Reader> logReaderClass;
-
   private WALCoprocessorHost coprocessorHost;
-
-  static void resetLogReaderClass() {
-    FSHLog.logReaderClass = null;
-  }
 
   private FSDataOutputStream hdfs_out; // FSDataOutputStream associated with the current SequenceFile.writer
   // Minimum tolerable replicas, if the actual value is lower than it, 
@@ -222,16 +213,6 @@ public class FSHLog implements HLog, Syncable {
   private final int closeErrorsTolerated;
 
   private final AtomicInteger closeErrorCount = new AtomicInteger();
-
-  static byte [] COMPLETE_CACHE_FLUSH;
-  static {
-    try {
-      COMPLETE_CACHE_FLUSH =
-        "HBASE::CACHEFLUSH".getBytes(HConstants.UTF8_ENCODING);
-    } catch (UnsupportedEncodingException e) {
-      assert(false);
-    }
-  }
 
   /**
    * Constructor.
@@ -604,7 +585,7 @@ public class FSHLog implements HLog, Syncable {
    */
   protected Writer createWriterInstance(final FileSystem fs, final Path path,
       final Configuration conf) throws IOException {
-    return createWriter(fs, path, conf);
+    return HLogUtil.createWriter(fs, path, conf);
   }
 
   /*
@@ -642,7 +623,7 @@ public class FSHLog implements HLog, Syncable {
     int logCount = this.outputfiles.size();
     if (logCount > this.maxLogs && logCount > 0) {
       // This is an array of encoded region names.
-      regions = findMemstoresWithEditsEqualOrOlderThan(this.outputfiles.firstKey(),
+      regions = HLogUtil.findMemstoresWithEditsEqualOrOlderThan(this.outputfiles.firstKey(),
         this.lastSeqWritten);
       if (regions != null) {
         StringBuilder sb = new StringBuilder();
@@ -656,29 +637,6 @@ public class FSHLog implements HLog, Syncable {
       }
     }
     return regions;
-  }
-
-  /**
-   * Return regions (memstores) that have edits that are equal or less than
-   * the passed <code>oldestWALseqid</code>.
-   * @param oldestWALseqid
-   * @param regionsToSeqids Encoded region names to sequence ids
-   * @return All regions whose seqid is < than <code>oldestWALseqid</code> (Not
-   * necessarily in order).  Null if no regions found.
-   */
-  static byte [][] findMemstoresWithEditsEqualOrOlderThan(final long oldestWALseqid,
-      final Map<byte [], Long> regionsToSeqids) {
-    //  This method is static so it can be unit tested the easier.
-    List<byte []> regions = null;
-    for (Map.Entry<byte [], Long> e: regionsToSeqids.entrySet()) {
-      if (e.getValue().longValue() <= oldestWALseqid) {
-        if (regions == null) regions = new ArrayList<byte []>();
-        // Key is encoded region name.
-        regions.add(e.getKey());
-      }
-    }
-    return regions == null?
-      null: regions.toArray(new byte [][] {HConstants.EMPTY_BYTE_ARRAY});
   }
 
   /*
@@ -831,60 +789,6 @@ public class FSHLog implements HLog, Syncable {
       FSUtils.getPath(this.oldLogDir));
     if (!fs.delete(dir, true)) {
       LOG.info("Unable to delete " + dir);
-    }
-  }
-  
-  /**
-   * Get a reader for the WAL.
-   * @param fs
-   * @param path
-   * @param conf
-   * @return A WAL reader.  Close when done with it.
-   * @throws IOException
-   */
-  public static HLog.Reader getReader(final FileSystem fs,
-    final Path path, Configuration conf)
-  throws IOException {
-    try {
-
-      if (logReaderClass == null) {
-
-        logReaderClass = conf.getClass("hbase.regionserver.hlog.reader.impl",
-            SequenceFileLogReader.class, Reader.class);
-      }
-
-
-      FSHLog.Reader reader = logReaderClass.newInstance();
-      reader.init(fs, path, conf);
-      return reader;
-    } catch (IOException e) {
-      throw e;
-    }
-    catch (Exception e) {
-      throw new IOException("Cannot get log reader", e);
-    }
-  }
-
-  /**
-   * Get a writer for the WAL.
-   * @param path
-   * @param conf
-   * @return A WAL writer.  Close when done with it.
-   * @throws IOException
-   */
-  public static HLog.Writer createWriter(final FileSystem fs,
-      final Path path, Configuration conf)
-  throws IOException {
-    try {
-      if (logWriterClass == null) {
-        logWriterClass = conf.getClass("hbase.regionserver.hlog.writer.impl",
-            SequenceFileLogWriter.class, Writer.class);
-      }
-      FSHLog.Writer writer = (FSHLog.Writer) logWriterClass.newInstance();
-      writer.init(fs, path, conf);
-      return writer;
-    } catch (Exception e) {
-      throw new IOException("cannot get log writer", e);
     }
   }
 
@@ -1519,8 +1423,8 @@ public class FSHLog implements HLog, Syncable {
   }
 
   private WALEdit completeCacheFlushLogEdit() {
-    KeyValue kv = new KeyValue(METAROW, HLogUtil.METAFAMILY, null,
-      System.currentTimeMillis(), COMPLETE_CACHE_FLUSH);
+    KeyValue kv = new KeyValue(HLogUtil.METAROW, HLogUtil.METAFAMILY, null,
+      System.currentTimeMillis(), HLogUtil.COMPLETE_CACHE_FLUSH);
     WALEdit e = new WALEdit();
     e.add(kv);
     return e;
@@ -1565,48 +1469,6 @@ public class FSHLog implements HLog, Syncable {
       return lowReplicationRollEnabled;
   }
 
-  /**
-   * Returns sorted set of edit files made by wal-log splitter, excluding files
-   * with '.temp' suffix.
-   * @param fs
-   * @param regiondir
-   * @return Files in passed <code>regiondir</code> as a sorted set.
-   * @throws IOException
-   */
-  public static NavigableSet<Path> getSplitEditFilesSorted(final FileSystem fs,
-                                  final Path regiondir)
-                                  throws IOException {
-      NavigableSet<Path> filesSorted = new TreeSet<Path>();
-      Path editsdir = HLogUtil.getRegionDirRecoveredEditsDir(regiondir);
-      if (!fs.exists(editsdir)) return filesSorted;
-      FileStatus[] files = FSUtils.listStatus(fs, editsdir, new PathFilter() {
-          @Override
-          public boolean accept(Path p) {
-              boolean result = false;
-              try {
-                  // Return files and only files that match the editfile names pattern.
-                  // There can be other files in this directory other than edit files.
-                  // In particular, on error, we'll move aside the bad edit file giving
-                  // it a timestamp suffix.  See moveAsideBadEditsFile.
-                  Matcher m = HLogUtil.EDITFILES_NAME_PATTERN.matcher(p.getName());
-                  result = fs.isFile(p) && m.matches();
-                  // Skip the file whose name ends with RECOVERED_LOG_TMPFILE_SUFFIX,
-                  // because it means splithlog thread is writting this file.
-                  if (p.getName().endsWith(HLogUtil.RECOVERED_LOG_TMPFILE_SUFFIX)) {
-                      result = false;
-                  }
-              } catch (IOException e) {
-                  LOG.warn("Failed isFile check on " + p);
-              }
-              return result;
-          }
-      });
-      if (files == null) return filesSorted;
-      for (FileStatus status: files) {
-          filesSorted.add(status.getPath());
-      }
-      return filesSorted;
-  }
 
   /**
    * Get the directory we are making logs in.
