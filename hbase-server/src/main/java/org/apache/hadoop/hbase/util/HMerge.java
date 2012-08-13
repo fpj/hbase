@@ -156,10 +156,9 @@ class HMerge {
           Bytes.toString(tableName)
       );
       this.htd = FSTableDescriptors.getTableDescriptor(this.fs, this.tabledir);
-      Path logdir = new Path(tabledir, "merge_" + System.currentTimeMillis() +
-          HConstants.HREGION_LOGDIR_NAME);
-      Path oldLogDir = new Path(tabledir, HConstants.HREGION_OLDLOGDIR_NAME);
-      this.hlog = HLogFactory.getHLog(fs, logdir, oldLogDir, conf);
+      String logname = "merge_" + System.currentTimeMillis() + HConstants.HREGION_LOGDIR_NAME;
+
+      this.hlog = HLogFactory.createHLog(fs, tabledir, logname, conf);
     }
 
     void process() throws IOException {

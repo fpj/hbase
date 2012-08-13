@@ -159,11 +159,12 @@ public class TestCacheOnWriteInSchema {
 
     // Create a store based on the schema
     Path basedir = new Path(DIR);
-    Path logdir = new Path(DIR+"/logs");
-    Path oldLogDir = new Path(basedir, HConstants.HREGION_OLDLOGDIR_NAME);
+    String logName = "logs";
+    Path logdir = new Path(DIR, logName);
     fs.delete(logdir, true);
+
     HRegionInfo info = new HRegionInfo(htd.getName(), null, null, false);
-    HLog hlog = HLogFactory.getHLog(fs, logdir, oldLogDir, conf);
+    HLog hlog = HLogFactory.createHLog(fs, basedir, logName, conf);
     HRegion region = new HRegion(basedir, hlog, fs, conf, info, htd, null);
     store = new Store(basedir, region, hcd, fs, conf);
   }

@@ -71,6 +71,7 @@ public class TestWALReplay {
   static final HBaseTestingUtility TEST_UTIL = new HBaseTestingUtility();
   private final EnvironmentEdge ee = EnvironmentEdgeManager.getDelegate();
   private Path hbaseRootDir = null;
+  private String logName;
   private Path oldLogDir;
   private Path logDir;
   private FileSystem fs;
@@ -100,7 +101,8 @@ public class TestWALReplay {
     this.fs = TEST_UTIL.getDFSCluster().getFileSystem();
     this.hbaseRootDir = new Path(this.conf.get(HConstants.HBASE_DIR));
     this.oldLogDir = new Path(this.hbaseRootDir, HConstants.HREGION_OLDLOGDIR_NAME);
-    this.logDir = new Path(this.hbaseRootDir, HConstants.HREGION_LOGDIR_NAME);
+    this.logName = HConstants.HREGION_LOGDIR_NAME;
+    this.logDir = new Path(this.hbaseRootDir, logName);
     if (TEST_UTIL.getDFSCluster().getFileSystem().exists(this.hbaseRootDir)) {
       TEST_UTIL.getDFSCluster().getFileSystem().delete(this.hbaseRootDir, true);
     }
@@ -679,8 +681,8 @@ public class TestWALReplay {
   static class MockHLog extends FSHLog {
     boolean doCompleteCacheFlush = false;
 
-    public MockHLog(FileSystem fs, Path dir, Path oldLogDir, Configuration conf) throws IOException {
-      super(fs, dir, oldLogDir, conf);
+    public MockHLog(FileSystem fs, Path rootDir, String logName, Configuration conf) throws IOException {
+      super(fs, rootDir, logName, conf);
     }
 
     @Override
@@ -701,7 +703,7 @@ public class TestWALReplay {
   }
   
   private MockHLog createMockWAL(Configuration conf) throws IOException {
-    MockHLog wal = new MockHLog(FileSystem.get(conf), logDir, oldLogDir, conf);
+    MockHLog wal = new MockHLog(FileSystem.get(conf), hbaseRootDir, logName, conf);
     // Set down maximum recovery so we dfsclient doesn't linger retrying something
     // long gone.
     HBaseTestingUtility.setMaxRecoveryErrorCount(((FSHLog) wal).getOutputStream(), 1);
@@ -784,7 +786,7 @@ public class TestWALReplay {
    * @throws IOException
    */
   private HLog createWAL(final Configuration c) throws IOException {
-    HLog wal = HLogFactory.getHLog(FileSystem.get(c), logDir, oldLogDir, c);
+    HLog wal = HLogFactory.createHLog(FileSystem.get(c), hbaseRootDir, logName, c);
     // Set down maximum recovery so we dfsclient doesn't linger retrying something
     // long gone.
     HBaseTestingUtility.setMaxRecoveryErrorCount(((FSHLog) wal).getOutputStream(), 1);

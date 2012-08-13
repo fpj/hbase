@@ -34,14 +34,14 @@ import org.apache.hadoop.fs.Path;
 public class HLogFactory {
     private static final Log LOG = LogFactory.getLog(HLogFactory.class);
     
-    public static HLog getHLog(final FileSystem fs, final Path dir, final Path oldLogDir,
-                                    final Configuration conf) throws IOException {
-        return new FSHLog(fs, dir, oldLogDir, conf);
+    public static HLog createHLog(final FileSystem fs, final Path root, final String logName,
+                                  final Configuration conf) throws IOException {
+        return new FSHLog(fs, root, logName, conf);
     }
     
-    public static HLog getHLog(final FileSystem fs, final Path dir, final Path oldLogDir,
-                                    final Configuration conf, final List<WALActionsListener> listeners,
-                                    final String prefix) throws IOException {
-        return new FSHLog(fs, dir, oldLogDir, conf, listeners, prefix);
+    public static HLog createHLog(final FileSystem fs, final Path root, final String logName,
+                                  final Configuration conf, final List<WALActionsListener> listeners,
+                                  final String prefix) throws IOException {
+        return new FSHLog(fs, root, logName, conf, listeners, prefix);
     }
 }

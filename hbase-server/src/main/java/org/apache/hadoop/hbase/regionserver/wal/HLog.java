@@ -155,7 +155,8 @@ public interface HLog {
       public void abortCacheFlush(byte[] encodedRegionName);
       public WALCoprocessorHost getCoprocessorHost();
       public boolean isLowReplicationRollEnabled();
-      
+
+      public NavigableSet<Path> getSplitEditFilesSorted() throws IOException;
       /*
        * Package protected methods
        */

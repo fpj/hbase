@@ -2829,7 +2829,7 @@ public class HRegion implements HeapSize { // , Writable{
       }
     }
     long seqid = minSeqIdForTheRegion;
-    NavigableSet<Path> files = HLogUtil.getSplitEditFilesSorted(this.fs, regiondir);
+    NavigableSet<Path> files = log.getSplitEditFilesSorted();
     if (files == null || files.isEmpty()) return seqid;
 
     for (Path edits: files) {
@@ -3819,8 +3819,8 @@ public class HRegion implements HeapSize { // , Writable{
     fs.mkdirs(regionDir);
     HLog effectiveHLog = hlog;
     if (hlog == null && !ignoreHLog) {
-      effectiveHLog = HLogFactory.getHLog(fs, new Path(regionDir, HConstants.HREGION_LOGDIR_NAME),
-          new Path(regionDir, HConstants.HREGION_OLDLOGDIR_NAME), conf);
+      effectiveHLog = HLogFactory.createHLog(fs, regionDir,
+                                             HConstants.HREGION_LOGDIR_NAME, conf);
     }
     HRegion region = HRegion.newHRegion(tableDir,
         effectiveHLog, fs, conf, info, hTableDescriptor, null);
@@ -5434,12 +5434,11 @@ public class HRegion implements HeapSize { // , Writable{
     final Path tableDir = new Path(args[0]);
     final Configuration c = HBaseConfiguration.create();
     final FileSystem fs = FileSystem.get(c);
-    final Path logdir = new Path(c.get("hbase.tmp.dir"),
-        "hlog" + tableDir.getName()
-        + EnvironmentEdgeManager.currentTimeMillis());
-    final Path oldLogDir = new Path(c.get("hbase.tmp.dir"),
-        HConstants.HREGION_OLDLOGDIR_NAME);
-    final HLog log = HLogFactory.getHLog(fs, logdir, oldLogDir, c);
+    final Path logdir = new Path(c.get("hbase.tmp.dir"));
+    final String logname = "hlog" + tableDir.getName()
+      + EnvironmentEdgeManager.currentTimeMillis();
+
+    final HLog log = HLogFactory.createHLog(fs, logdir, logname, c);
     try {
       processTable(fs, tableDir, log, c, majorCompact);
     } finally {

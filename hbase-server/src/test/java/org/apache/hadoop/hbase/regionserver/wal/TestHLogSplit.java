@@ -842,14 +842,15 @@ public class TestHLogSplit {
     long oldFlushInterval = conf.getLong(F_INTERVAL, 1000);
     conf.setLong(F_INTERVAL, 1000*1000*100);
     HLog log = null;
-    Path thisTestsDir = new Path(hbaseDir, "testLogRollAfterSplitStart");
+    String logName = "testLogRollAfterSplitStart";
+    Path thisTestsDir = new Path(hbaseDir, logName);
 
     try {
       // put some entries in an HLog
       byte [] tableName = Bytes.toBytes(this.getClass().getName());
       HRegionInfo regioninfo = new HRegionInfo(tableName,
           HConstants.EMPTY_START_ROW, HConstants.EMPTY_END_ROW);
-      log = HLogFactory.getHLog(fs, thisTestsDir, oldLogDir, conf);
+      log = HLogFactory.createHLog(fs, hbaseDir, logName, conf);
       final int total = 20;
       for (int i = 0; i < total; i++) {
         WALEdit kvs = new WALEdit();
@@ -1122,6 +1123,8 @@ public class TestHLogSplit {
     regions.add(regionName);
     generateHLogs(-1);
 
+    final HLog log = HLogFactory.createHLog(fs, regiondir, regionName, conf);
+
     HLogSplitter logSplitter = new HLogSplitter(
         conf, hbaseDir, hlogDir, oldLogDir, fs) {
       protected HLog.Writer createWriter(FileSystem fs, Path logfile, Configuration conf)
@@ -1130,8 +1133,7 @@ public class TestHLogSplit {
         // After creating writer, simulate region's
         // replayRecoveredEditsIfAny() which gets SplitEditFiles of this
         // region and delete them, excluding files with '.temp' suffix.
-        NavigableSet<Path> files = HLogUtil.getSplitEditFilesSorted(this.fs,
-            regiondir);
+        NavigableSet<Path> files = log.getSplitEditFilesSorted();
         if (files != null && !files.isEmpty()) {
           for (Path file : files) {
             if (!this.fs.delete(file, false)) {

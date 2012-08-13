@@ -65,7 +65,7 @@ public class TestHLogRecordReader {
   private static final byte [] value = Bytes.toBytes("value");
   private static HTableDescriptor htd;
   private static Path logDir;
-  private static Path oldLogDir;
+  private static String logName;
 
   private static String getName() {
     return "TestHLogRecordReader";
@@ -91,8 +91,10 @@ public class TestHLogRecordReader {
     fs = TEST_UTIL.getDFSCluster().getFileSystem();
 
     hbaseDir = TEST_UTIL.createRootDir();
-    logDir = new Path(hbaseDir, HConstants.HREGION_LOGDIR_NAME);
-    oldLogDir = new Path(hbaseDir, HConstants.HREGION_OLDLOGDIR_NAME);
+    
+    logName = HConstants.HREGION_LOGDIR_NAME;
+    logDir = new Path(hbaseDir, logName);
+
     htd = new HTableDescriptor(tableName);
     htd.addFamily(new HColumnDescriptor(family));
   }
@@ -108,7 +110,8 @@ public class TestHLogRecordReader {
    */
   @Test
   public void testPartialRead() throws Exception {
-    HLog log = HLogFactory.getHLog(fs, logDir, oldLogDir, conf);
+    HLog log = HLogFactory.createHLog(fs, hbaseDir,
+                                      logName, conf);
     long ts = System.currentTimeMillis();
     WALEdit edit = new WALEdit();
     edit.add(new KeyValue(rowName, family, Bytes.toBytes("1"),
@@ -164,7 +167,7 @@ public class TestHLogRecordReader {
    */
   @Test
   public void testHLogRecordReader() throws Exception {
-    HLog log = HLogFactory.getHLog(fs, logDir, oldLogDir, conf);
+    HLog log = HLogFactory.createHLog(fs, hbaseDir, logName, conf);
     byte [] value = Bytes.toBytes("value");
     WALEdit edit = new WALEdit();
     edit.add(new KeyValue(rowName, family, Bytes.toBytes("1"),

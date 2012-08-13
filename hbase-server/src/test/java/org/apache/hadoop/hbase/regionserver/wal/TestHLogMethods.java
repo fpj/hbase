@@ -71,7 +71,10 @@ public class TestHLogMethods {
     createFile(fs, recoverededits, last);
     createFile(fs, recoverededits,
       Long.toString(Long.MAX_VALUE) + "." + System.currentTimeMillis());
-    NavigableSet<Path> files = HLogUtil.getSplitEditFilesSorted(fs, regiondir);
+
+    HLog log = HLogFactory.createHLog(fs, regiondir,
+                                      "dummyLogName", util.getConfiguration());
+    NavigableSet<Path> files = log.getSplitEditFilesSorted();
     assertEquals(7, files.size());
     assertEquals(files.pollFirst().getName(), first);
     assertEquals(files.pollLast().getName(), last);

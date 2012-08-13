@@ -80,6 +80,7 @@ public class TestWALObserver {
   private FileSystem fs;
   private Path dir;
   private Path hbaseRootDir;
+  private String logName;
   private Path oldLogDir;
   private Path logDir;
 
@@ -114,6 +115,7 @@ public class TestWALObserver {
     this.dir = new Path(this.hbaseRootDir, TestWALObserver.class.getName());
     this.oldLogDir = new Path(this.hbaseRootDir, HConstants.HREGION_OLDLOGDIR_NAME);
     this.logDir = new Path(this.hbaseRootDir, HConstants.HREGION_LOGDIR_NAME);
+    this.logName = HConstants.HREGION_LOGDIR_NAME;
 
     if (TEST_UTIL.getDFSCluster().getFileSystem().exists(this.hbaseRootDir)) {
       TEST_UTIL.getDFSCluster().getFileSystem().delete(this.hbaseRootDir, true);
@@ -140,7 +142,7 @@ public class TestWALObserver {
     deleteDir(basedir);
     fs.mkdirs(new Path(basedir, hri.getEncodedName()));
 
-    HLog log = HLogFactory.getHLog(this.fs, this.dir, this.oldLogDir, this.conf);
+    HLog log = HLogFactory.createHLog(this.fs, hbaseRootDir, logName, this.conf);
     SampleRegionWALObserver cp = getCoprocessor(log);
 
     // TEST_FAMILY[0] shall be removed from WALEdit.
@@ -287,7 +289,8 @@ public class TestWALObserver {
    */
   @Test
   public void testWALObserverLoaded() throws Exception {
-    HLog log = HLogFactory.getHLog(fs, dir, oldLogDir, conf);
+    HLog log = HLogFactory.createHLog(fs, hbaseRootDir,
+                                      TestWALObserver.class.getName(), conf);
     assertNotNull(getCoprocessor(log));
   }
 
@@ -359,7 +362,7 @@ public class TestWALObserver {
     return splits.get(0);
   }
   private HLog createWAL(final Configuration c) throws IOException {
-    HLog wal = HLogFactory.getHLog(FileSystem.get(c), logDir, oldLogDir, c);
+    HLog wal = HLogFactory.createHLog(FileSystem.get(c), hbaseRootDir, logName, c);
     return wal;
   }
   private void addWALEdits (final byte [] tableName, final HRegionInfo hri,

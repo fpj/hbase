@@ -67,8 +67,7 @@ public class TestSplitTransaction {
   @Before public void setup() throws IOException {
     this.fs = FileSystem.get(TEST_UTIL.getConfiguration());
     this.fs.delete(this.testdir, true);
-    this.wal = HLogFactory.getHLog(fs, new Path(this.testdir, "logs"),
-      new Path(this.testdir, "archive"),
+    this.wal = HLogFactory.createHLog(fs, this.testdir, "logs",
       TEST_UTIL.getConfiguration());
     this.parent = createRegion(this.testdir, this.wal);
     TEST_UTIL.getConfiguration().setBoolean("hbase.testing.nocluster", true);

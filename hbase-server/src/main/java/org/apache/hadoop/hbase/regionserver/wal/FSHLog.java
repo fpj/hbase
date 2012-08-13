@@ -118,6 +118,7 @@ class FSHLog implements HLog, Syncable {
   static final Log LOG = LogFactory.getLog(FSHLog.class);
   
   private final FileSystem fs;
+  private final Path rootDir;
   private final Path dir;
   private final Configuration conf;
   // Listeners that are called on WAL events.
@@ -223,10 +224,10 @@ class FSHLog implements HLog, Syncable {
    * @param conf configuration to use
    * @throws IOException
    */
-  public FSHLog(final FileSystem fs, final Path dir, final Path oldLogDir,
-              final Configuration conf)
+  public FSHLog(final FileSystem fs, final Path root, final String logName,
+                final Configuration conf)
   throws IOException {
-    this(fs, dir, oldLogDir, conf, null, true, null);
+    this(fs, root, logName, conf, null, true, null);
   }
 
   /**
@@ -248,10 +249,10 @@ class FSHLog implements HLog, Syncable {
    *        If prefix is null, "hlog" will be used
    * @throws IOException
    */
-  public FSHLog(final FileSystem fs, final Path dir, final Path oldLogDir,
+  public FSHLog(final FileSystem fs, final Path root, final String logName,
       final Configuration conf, final List<WALActionsListener> listeners,
       final String prefix) throws IOException {
-    this(fs, dir, oldLogDir, conf, listeners, true, prefix);
+    this(fs, root, logName, conf, listeners, true, prefix);
   }
 
   /**
@@ -274,13 +275,14 @@ class FSHLog implements HLog, Syncable {
    *        If prefix is null, "hlog" will be used
    * @throws IOException
    */
-  public FSHLog(final FileSystem fs, final Path dir, final Path oldLogDir,
+  private FSHLog(final FileSystem fs, final Path root, final String logName,
       final Configuration conf, final List<WALActionsListener> listeners,
       final boolean failIfLogDirExists, final String prefix)
   throws IOException {
     super();
     this.fs = fs;
-    this.dir = dir;
+    this.rootDir = root;
+    this.dir = new Path(this.rootDir, logName);
     this.conf = conf;
     if (listeners != null) {
       for (WALActionsListener i: listeners) {
@@ -300,7 +302,7 @@ class FSHLog implements HLog, Syncable {
     if (!fs.mkdirs(dir)) {
       throw new IOException("Unable to mkdir " + dir);
     }
-    this.oldLogDir = oldLogDir;
+    this.oldLogDir = new Path(this.rootDir, HConstants.HREGION_OLDLOGDIR_NAME);
     if (!fs.exists(oldLogDir)) {
       if (!fs.mkdirs(this.oldLogDir)) {
         throw new IOException("Unable to mkdir " + this.oldLogDir);
@@ -1516,6 +1518,48 @@ class FSHLog implements HLog, Syncable {
     HLogSplitter logSplitter = HLogSplitter.createLogSplitter(
         conf, baseDir, p, oldLogDir, fs);
     logSplitter.splitLog();
+  }
+
+  /**
+   * Returns sorted set of edit files made by wal-log splitter, excluding files
+   * with '.temp' suffix.
+   * @param fs
+   * @param regiondir
+   * @return Files in passed <code>regiondir</code> as a sorted set.
+   * @throws IOException
+   */
+  public NavigableSet<Path> getSplitEditFilesSorted()
+      throws IOException {
+    NavigableSet<Path> filesSorted = new TreeSet<Path>();
+    Path editsdir = HLogUtil.getRegionDirRecoveredEditsDir(rootDir);
+    if (!fs.exists(editsdir)) return filesSorted;
+    FileStatus[] files = FSUtils.listStatus(fs, editsdir, new PathFilter() {
+        @Override
+        public boolean accept(Path p) {
+          boolean result = false;
+          try {
+            // Return files and only files that match the editfile names pattern.
+            // There can be other files in this directory other than edit files.
+            // In particular, on error, we'll move aside the bad edit file giving
+            // it a timestamp suffix.  See moveAsideBadEditsFile.
+            Matcher m = HLogUtil.EDITFILES_NAME_PATTERN.matcher(p.getName());
+            result = fs.isFile(p) && m.matches();
+            // Skip the file whose name ends with RECOVERED_LOG_TMPFILE_SUFFIX,
+            // because it means splithlog thread is writting this file.
+            if (p.getName().endsWith(HLogUtil.RECOVERED_LOG_TMPFILE_SUFFIX)) {
+              result = false;
+            }
+          } catch (IOException e) {
+            LOG.warn("Failed isFile check on " + p);
+          }
+          return result;
+        }
+      });
+    if (files == null) return filesSorted;
+    for (FileStatus status: files) {
+      filesSorted.add(status.getPath());
+    }
+    return filesSorted;
   }
 
   /**

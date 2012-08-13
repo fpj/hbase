@@ -53,7 +53,7 @@ public class TestLogRollingNoCluster {
   public void testContendedLogRolling() throws IOException, InterruptedException {
     FileSystem fs = FileSystem.get(TEST_UTIL.getConfiguration());
     Path dir = TEST_UTIL.getDataTestDir();
-    HLog wal = HLogFactory.getHLog(fs, new Path(dir, "logs"), new Path(dir, "oldlogs"),
+    HLog wal = HLogFactory.createHLog(fs, dir, "logs",
       TEST_UTIL.getConfiguration());
     Appender [] appenders = null;
 

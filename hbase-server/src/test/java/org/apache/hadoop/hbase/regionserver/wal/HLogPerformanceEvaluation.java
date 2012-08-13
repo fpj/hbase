@@ -180,8 +180,7 @@ public final class HLogPerformanceEvaluation extends Configured implements Tool 
       // Initialize Table Descriptor
       HTableDescriptor htd = createHTableDescriptor(numFamilies);
       final long whenToRoll = roll;
-      HLog hlog = new FSHLog(fs, new Path(rootRegionDir, "wals"),
-          new Path(rootRegionDir, "old.wals"), getConf()) {
+      HLog hlog = new FSHLog(fs, rootRegionDir, "wals", getConf()) {
         int appends = 0;
         protected void doWrite(HRegionInfo info, HLogKey logKey, WALEdit logEdit,
             HTableDescriptor htd)

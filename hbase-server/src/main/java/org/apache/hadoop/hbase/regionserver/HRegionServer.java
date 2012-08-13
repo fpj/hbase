@@ -1274,8 +1274,10 @@ public class  HRegionServer implements ClientProtocol,
    */
   private HLog setupWALAndReplication() throws IOException {
     final Path oldLogDir = new Path(rootDir, HConstants.HREGION_OLDLOGDIR_NAME);
-    Path logdir = new Path(rootDir,
-      HLogUtil.getHLogDirectoryName(this.serverNameFromMasterPOV.toString()));
+    final String logName
+      = HLogUtil.getHLogDirectoryName(this.serverNameFromMasterPOV.toString());
+
+    Path logdir = new Path(rootDir, logName);
     if (LOG.isDebugEnabled()) LOG.debug("logdir=" + logdir);
     if (this.fs.exists(logdir)) {
       throw new RegionServerRunningException("Region server has already " +
@@ -1285,7 +1287,7 @@ public class  HRegionServer implements ClientProtocol,
     // Instantiate replication manager if replication enabled.  Pass it the
     // log directories.
     createNewReplicationInstance(conf, this, this.fs, logdir, oldLogDir);
-    return instantiateHLog(logdir, oldLogDir);
+    return instantiateHLog(rootDir, logName);
   }
 
   /**
@@ -1295,8 +1297,8 @@ public class  HRegionServer implements ClientProtocol,
    * @return WAL instance.
    * @throws IOException
    */
-  protected HLog instantiateHLog(Path logdir, Path oldLogDir) throws IOException {
-    return HLogFactory.getHLog(this.fs.getBackingFs(), logdir, oldLogDir, this.conf,
+  protected HLog instantiateHLog(Path rootdir, String logName) throws IOException {
+    return HLogFactory.createHLog(this.fs.getBackingFs(), rootdir, logName, this.conf,
       getWALActionListeners(), this.serverNameFromMasterPOV.toString());
   }
 

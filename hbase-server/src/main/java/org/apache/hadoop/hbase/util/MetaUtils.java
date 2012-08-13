@@ -98,11 +98,10 @@ public class MetaUtils {
    */
   public synchronized HLog getLog() throws IOException {
     if (this.log == null) {
-      Path logdir = new Path(this.fs.getHomeDirectory(),
-          HConstants.HREGION_LOGDIR_NAME + "_" + System.currentTimeMillis());
-      Path oldLogDir = new Path(this.fs.getHomeDirectory(),
-          HConstants.HREGION_OLDLOGDIR_NAME);
-      this.log = HLogFactory.getHLog(this.fs, logdir, oldLogDir, this.conf);
+      String logName = 
+          HConstants.HREGION_LOGDIR_NAME + "_" + System.currentTimeMillis();
+      this.log = HLogFactory.createHLog(this.fs, this.fs.getHomeDirectory(),
+                                        logName, this.conf);
     }
     return this.log;
   }

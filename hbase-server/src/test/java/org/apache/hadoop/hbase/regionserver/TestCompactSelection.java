@@ -75,7 +75,8 @@ public class TestCompactSelection extends TestCase {
 
     //Setting up a Store
     Path basedir = new Path(DIR);
-    Path logdir = new Path(DIR+"/logs");
+    String logName = "logs";
+    Path logdir = new Path(DIR, logName);
     Path oldLogDir = new Path(basedir, HConstants.HREGION_OLDLOGDIR_NAME);
     HColumnDescriptor hcd = new HColumnDescriptor(Bytes.toBytes("family"));
     FileSystem fs = FileSystem.get(conf);
@@ -86,7 +87,7 @@ public class TestCompactSelection extends TestCase {
     htd.addFamily(hcd);
     HRegionInfo info = new HRegionInfo(htd.getName(), null, null, false);
 
-    HLog hlog = HLogFactory.getHLog(fs, logdir, oldLogDir, conf);
+    HLog hlog = HLogFactory.createHLog(fs, basedir, logName, conf);
     HRegion region = HRegion.createHRegion(info, basedir, conf, htd);
     HRegion.closeHRegion(region);
     Path tableDir = new Path(basedir, Bytes.toString(htd.getName()));
