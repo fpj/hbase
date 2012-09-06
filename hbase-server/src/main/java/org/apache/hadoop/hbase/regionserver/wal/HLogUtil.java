@@ -48,10 +48,7 @@ import org.apache.hadoop.hbase.util.Bytes;
 
 public class HLogUtil {
     static final Log LOG = LogFactory.getLog(HLogUtil.class);
-    
-    public static final byte [] METAFAMILY = Bytes.toBytes("METAFAMILY");
-    static final byte [] METAROW = Bytes.toBytes("METAROW");
-    
+        
     static byte [] COMPLETE_CACHE_FLUSH;
     static {
       try {
@@ -61,19 +58,6 @@ public class HLogUtil {
         assert(false);
       }
     }
-    
-    /** File Extension used while splitting an HLog into regions (HBASE-2312) */
-    public static final String SPLITTING_EXT = "-splitting";
-    public static final boolean SPLIT_SKIP_ERRORS_DEFAULT = false; 
-    
-    /*
-     * Name of directory that holds recovered edits written by the wal log
-     * splitting code, one per region
-     */
-    static final String RECOVERED_EDITS_DIR = "recovered.edits";
-    static final Pattern EDITFILES_NAME_PATTERN =
-      Pattern.compile("-?[0-9]+");
-    static final String RECOVERED_LOG_TMPFILE_SUFFIX = ".temp";
     
     private static Class<? extends Writer> logWriterClass;
     private static Class<? extends Reader> logReaderClass;
@@ -87,7 +71,7 @@ public class HLogUtil {
      * @return true if the column is a meta column
      */
     public static boolean isMetaFamily(byte [] family) {
-      return Bytes.equals(METAFAMILY, family);
+      return Bytes.equals(HLog.METAFAMILY, family);
     }
     
     @SuppressWarnings("unchecked")
@@ -195,7 +179,7 @@ public class HLogUtil {
      * <code>regiondir</code>
      */
     public static Path getRegionDirRecoveredEditsDir(final Path regiondir) {
-      return new Path(regiondir, RECOVERED_EDITS_DIR);
+      return new Path(regiondir, HLog.RECOVERED_EDITS_DIR);
     }
         
     /**

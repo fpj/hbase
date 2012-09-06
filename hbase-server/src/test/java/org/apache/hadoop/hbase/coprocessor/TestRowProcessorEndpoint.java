@@ -323,7 +323,7 @@ public class TestRowProcessorEndpoint {
 
         // We can also inject some meta data to the walEdit
         KeyValue metaKv = new KeyValue(
-            row, HLogUtil.METAFAMILY,
+            row, HLog.METAFAMILY,
             Bytes.toBytes("I just increment counter"),
             Bytes.toBytes(counter));
         walEdit.add(metaKv);

@@ -493,7 +493,7 @@ public class ReplicationSource extends Thread
                 new Path(manager.getLogDir().getParent(), this.deadRegionServers[i]);
             Path[] locs = new Path[] {
                 new Path(deadRsDirectory, currentPath.getName()),
-                new Path(deadRsDirectory.suffix(HLogUtil.SPLITTING_EXT),
+                new Path(deadRsDirectory.suffix(HLog.SPLITTING_EXT),
                                           currentPath.getName()),
             };
             for (Path possibleLogLocation : locs) {

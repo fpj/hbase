@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.NavigableSet;
 import java.util.UUID;
+import java.util.regex.Pattern;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -41,6 +42,22 @@ import org.apache.hadoop.hbase.util.Bytes;
 public interface HLog {   
     public static final Log LOG = LogFactory.getLog(HLog.class);
     
+    public static final byte [] METAFAMILY = Bytes.toBytes("METAFAMILY");
+    static final byte [] METAROW = Bytes.toBytes("METAROW");
+    
+    /** File Extension used while splitting an HLog into regions (HBASE-2312) */
+    public static final String SPLITTING_EXT = "-splitting";
+    public static final boolean SPLIT_SKIP_ERRORS_DEFAULT = false; 
+    
+    /*
+     * Name of directory that holds recovered edits written by the wal log
+     * splitting code, one per region
+     */
+    static final String RECOVERED_EDITS_DIR = "recovered.edits";
+    static final Pattern EDITFILES_NAME_PATTERN =
+      Pattern.compile("-?[0-9]+");
+    static final String RECOVERED_LOG_TMPFILE_SUFFIX = ".temp";
+    
     public interface Reader {
         void init(FileSystem fs, Path path, Configuration c) throws IOException;
         void close() throws IOException;
@@ -48,21 +65,21 @@ public interface HLog {
         Entry next(Entry reuse) throws IOException;
         void seek(long pos) throws IOException;
         long getPosition() throws IOException;
-      }
+    }
 
-      public interface Writer {
+    public interface Writer {
         void init(FileSystem fs, Path path, Configuration c) throws IOException;
         void close() throws IOException;
         void sync() throws IOException;
         void append(Entry entry) throws IOException;
         long getLength() throws IOException;
-      }
+    }
       
-      /**
-       * Utility class that lets us keep track of the edit with it's key
-       * Only used when splitting logs
-       */
-      public static class Entry implements Writable {
+    /**
+     * Utility class that lets us keep track of the edit with it's key
+     * Only used when splitting logs
+     */
+    public static class Entry implements Writable {
         private WALEdit edit;
         private HLogKey key;
 
@@ -121,48 +138,48 @@ public interface HLog {
           this.key.readFields(dataInput);
           this.edit.readFields(dataInput);
         }
-      }
+    }
           
-      public void registerWALActionsListener(final WALActionsListener listener);
-      public boolean unregisterWALActionsListener(final WALActionsListener listener);
-      public long getFilenum();
-      public void setSequenceNumber(final long newvalue);
-      public long getSequenceNumber();
-      public byte [][] rollWriter() throws FailedLogCloseException, IOException;
-      public byte [][] rollWriter(boolean force) throws FailedLogCloseException, IOException;
-      public void close() throws IOException;
-      public void closeAndDelete() throws IOException;
-      public long append(HRegionInfo regionInfo, HLogKey logKey, WALEdit logEdit,
-                                      HTableDescriptor htd, boolean doSync)
-      throws IOException;
-      public void append(HRegionInfo info, byte [] tableName, WALEdit edits,
+    public void registerWALActionsListener(final WALActionsListener listener);
+    public boolean unregisterWALActionsListener(final WALActionsListener listener);
+    public long getFilenum();
+    public void setSequenceNumber(final long newvalue);
+    public long getSequenceNumber();
+    public byte [][] rollWriter() throws FailedLogCloseException, IOException;
+    public byte [][] rollWriter(boolean force) throws FailedLogCloseException, IOException;
+    public void close() throws IOException;
+    public void closeAndDelete() throws IOException;
+    public long append(HRegionInfo regionInfo, HLogKey logKey, WALEdit logEdit,
+                                    HTableDescriptor htd, boolean doSync)
+    throws IOException;
+    public void append(HRegionInfo info, byte [] tableName, WALEdit edits,
                                       final long now, HTableDescriptor htd)
-      throws IOException;
-      public long appendNoSync(HRegionInfo info, byte [] tableName, WALEdit edits, 
-                                      UUID clusterId, final long now, HTableDescriptor htd)
-      throws IOException;
-      public long append(HRegionInfo info, byte [] tableName, WALEdit edits, 
-                                      UUID clusterId, final long now, HTableDescriptor htd)
-      throws IOException;
-      public void hsync() throws IOException;
-      public void hflush() throws IOException;
-      public void sync() throws IOException;
-      public void sync(long txid) throws IOException;
-      public long startCacheFlush(final byte[] encodedRegionName);
-      public void completeCacheFlush(final byte [] encodedRegionName,
-                                      final byte [] tableName, final long logSeqId, final boolean isMetaRegion)
-      throws IOException;
-      public void abortCacheFlush(byte[] encodedRegionName);
-      public WALCoprocessorHost getCoprocessorHost();
-      public boolean isLowReplicationRollEnabled();
+    throws IOException;
+    public long appendNoSync(HRegionInfo info, byte [] tableName, WALEdit edits, 
+                                    UUID clusterId, final long now, HTableDescriptor htd)
+    throws IOException;
+    public long append(HRegionInfo info, byte [] tableName, WALEdit edits, 
+                                    UUID clusterId, final long now, HTableDescriptor htd)
+    throws IOException;
+    public void hsync() throws IOException;
+    public void hflush() throws IOException;
+    public void sync() throws IOException;
+    public void sync(long txid) throws IOException;
+    public long startCacheFlush(final byte[] encodedRegionName);
+    public void completeCacheFlush(final byte [] encodedRegionName,
+                                    final byte [] tableName, final long logSeqId, final boolean isMetaRegion)
+    throws IOException;
+    public void abortCacheFlush(byte[] encodedRegionName);
+    public WALCoprocessorHost getCoprocessorHost();
+    public boolean isLowReplicationRollEnabled();
 
-      public NavigableSet<Path> getSplitEditFilesSorted() throws IOException;
-      /*
-       * Package protected methods
-       */
-      //int getNumLogFiles();
-      //OutputStream getOutputStream();
-      //Path computeFilename();
-      //Path computeFilename(long filenum);
-      //boolean canGetCurReplicas();
+    public NavigableSet<Path> getSplitEditFilesSorted() throws IOException;
+    /*
+     * Package protected methods
+     */
+    //int getNumLogFiles();
+    //OutputStream getOutputStream();
+    //Path computeFilename();
+    //Path computeFilename(long filenum);
+    //boolean canGetCurReplicas();
 }

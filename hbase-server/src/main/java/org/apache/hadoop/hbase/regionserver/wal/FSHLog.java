@@ -1425,7 +1425,7 @@ class FSHLog implements HLog, Syncable {
   }
 
   private WALEdit completeCacheFlushLogEdit() {
-    KeyValue kv = new KeyValue(HLogUtil.METAROW, HLogUtil.METAFAMILY, null,
+    KeyValue kv = new KeyValue(HLog.METAROW, HLog.METAFAMILY, null,
       System.currentTimeMillis(), HLogUtil.COMPLETE_CACHE_FLUSH);
     WALEdit e = new WALEdit();
     e.add(kv);
@@ -1542,11 +1542,11 @@ class FSHLog implements HLog, Syncable {
             // There can be other files in this directory other than edit files.
             // In particular, on error, we'll move aside the bad edit file giving
             // it a timestamp suffix.  See moveAsideBadEditsFile.
-            Matcher m = HLogUtil.EDITFILES_NAME_PATTERN.matcher(p.getName());
+            Matcher m = HLog.EDITFILES_NAME_PATTERN.matcher(p.getName());
             result = fs.isFile(p) && m.matches();
             // Skip the file whose name ends with RECOVERED_LOG_TMPFILE_SUFFIX,
             // because it means splithlog thread is writting this file.
-            if (p.getName().endsWith(HLogUtil.RECOVERED_LOG_TMPFILE_SUFFIX)) {
+            if (p.getName().endsWith(HLog.RECOVERED_LOG_TMPFILE_SUFFIX)) {
               result = false;
             }
           } catch (IOException e) {

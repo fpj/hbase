@@ -374,7 +374,7 @@ public class HLogSplitter {
         "Splitting log file " + logfile.getPath() +
         "into a temporary staging area.");
     boolean skipErrors = conf.getBoolean("hbase.hlog.split.skip.errors",
-        HLogUtil.SPLIT_SKIP_ERRORS_DEFAULT);
+        HLog.SPLIT_SKIP_ERRORS_DEFAULT);
     int interval = conf.getInt("hbase.splitlog.report.interval.loglines", 1024);
     Path logPath = logfile.getPath();
     long logLength = logfile.getLen();
@@ -573,7 +573,7 @@ public class HLogSplitter {
   }
 
   static String getTmpRecoveredEditsFileName(String fileName) {
-    return fileName + HLogUtil.RECOVERED_LOG_TMPFILE_SUFFIX;
+    return fileName + HLog.RECOVERED_LOG_TMPFILE_SUFFIX;
   }
 
   /**

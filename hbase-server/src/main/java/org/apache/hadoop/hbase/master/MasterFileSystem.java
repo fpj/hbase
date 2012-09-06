@@ -195,7 +195,7 @@ public class MasterFileSystem {
    */
   void splitLogAfterStartup() {
     boolean retrySplitting = !conf.getBoolean("hbase.hlog.split.skip.errors",
-        HLogUtil.SPLIT_SKIP_ERRORS_DEFAULT);
+        HLog.SPLIT_SKIP_ERRORS_DEFAULT);
     Path logsDirPath = new Path(this.rootdir, HConstants.HREGION_LOGDIR_NAME);
     do {
       if (master.isStopped()) {
@@ -218,8 +218,8 @@ public class MasterFileSystem {
         for (FileStatus status : logFolders) {
           String sn = status.getPath().getName();
           // truncate splitting suffix if present (for ServerName parsing)
-          if (sn.endsWith(HLogUtil.SPLITTING_EXT)) {
-            sn = sn.substring(0, sn.length() - HLogUtil.SPLITTING_EXT.length());
+          if (sn.endsWith(HLog.SPLITTING_EXT)) {
+            sn = sn.substring(0, sn.length() - HLog.SPLITTING_EXT.length());
           }
           ServerName serverName = ServerName.parseServerName(sn);
           if (!onlineServers.contains(serverName)) {
@@ -265,7 +265,7 @@ public class MasterFileSystem {
     List<Path> logDirs = new ArrayList<Path>();
     for (ServerName serverName: serverNames) {
       Path logDir = new Path(this.rootdir, HLogUtil.getHLogDirectoryName(serverName.toString()));
-      Path splitDir = logDir.suffix(HLogUtil.SPLITTING_EXT);
+      Path splitDir = logDir.suffix(HLog.SPLITTING_EXT);
       // Rename the directory so a rogue RS doesn't create more HLogs
       if (fs.exists(logDir)) {
         if (!this.fs.rename(logDir, splitDir)) {

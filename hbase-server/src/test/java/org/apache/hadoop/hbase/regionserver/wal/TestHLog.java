@@ -545,8 +545,8 @@ public class TestHLog  {
         assertTrue(Bytes.equals(info.getEncodedNameAsBytes(), key.getEncodedRegionName()));
         assertTrue(Bytes.equals(tableName, key.getTablename()));
         KeyValue kv = val.getKeyValues().get(0);
-        assertTrue(Bytes.equals(HLogUtil.METAROW, kv.getRow()));
-        assertTrue(Bytes.equals(HLogUtil.METAFAMILY, kv.getFamily()));
+        assertTrue(Bytes.equals(HLog.METAROW, kv.getRow()));
+        assertTrue(Bytes.equals(HLog.METAFAMILY, kv.getFamily()));
         assertEquals(0, Bytes.compareTo(HLogUtil.COMPLETE_CACHE_FLUSH,
           val.getKeyValues().get(0).getValue()));
         System.out.println(key + " " + val);
@@ -613,8 +613,8 @@ public class TestHLog  {
         assertTrue(Bytes.equals(hri.getEncodedNameAsBytes(),
           entry.getKey().getEncodedRegionName()));
         assertTrue(Bytes.equals(tableName, entry.getKey().getTablename()));
-        assertTrue(Bytes.equals(HLogUtil.METAROW, val.getRow()));
-        assertTrue(Bytes.equals(HLogUtil.METAFAMILY, val.getFamily()));
+        assertTrue(Bytes.equals(HLog.METAROW, val.getRow()));
+        assertTrue(Bytes.equals(HLog.METAFAMILY, val.getFamily()));
         assertEquals(0, Bytes.compareTo(HLogUtil.COMPLETE_CACHE_FLUSH,
           val.getValue()));
         System.out.println(entry.getKey() + " " + val);
