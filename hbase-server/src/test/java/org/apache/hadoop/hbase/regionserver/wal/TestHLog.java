@@ -378,7 +378,7 @@ public class TestHLog  {
     HRegionInfo regioninfo = new HRegionInfo(tableName,
              HConstants.EMPTY_START_ROW, HConstants.EMPTY_END_ROW, false);
 
-    HLog wal = HLogFactory.createHLog(fs, dir, "hlogdir", conf);
+    HLog wal = HLogFactory.createHLog(fs, dir, "hlogdir", "hlogdir_archive", conf);
     final int total = 20;
 
     HTableDescriptor htd = new HTableDescriptor();

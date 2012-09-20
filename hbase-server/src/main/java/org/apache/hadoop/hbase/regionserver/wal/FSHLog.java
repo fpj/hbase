@@ -227,7 +227,24 @@ class FSHLog implements HLog, Syncable {
   public FSHLog(final FileSystem fs, final Path root, final String logName,
                 final Configuration conf)
   throws IOException {
-    this(fs, root, logName, conf, null, true, null);
+    this(fs, root, logName, HConstants.HREGION_OLDLOGDIR_NAME, 
+        conf, null, true, null);
+  }
+  
+  /**
+   * Constructor.
+   *
+   * @param fs filesystem handle
+   * @param dir path to where hlogs are stored
+   * @param oldLogDir path to where hlogs are archived
+   * @param conf configuration to use
+   * @throws IOException
+   */
+  public FSHLog(final FileSystem fs, final Path root, final String logName,
+                final String oldLogName, final Configuration conf)
+  throws IOException {
+    this(fs, root, logName, oldLogName, 
+        conf, null, true, null);
   }
 
   /**
@@ -252,7 +269,8 @@ class FSHLog implements HLog, Syncable {
   public FSHLog(final FileSystem fs, final Path root, final String logName,
       final Configuration conf, final List<WALActionsListener> listeners,
       final String prefix) throws IOException {
-    this(fs, root, logName, conf, listeners, true, prefix);
+    this(fs, root, logName, HConstants.HREGION_OLDLOGDIR_NAME, 
+        conf, listeners, true, prefix);
   }
 
   /**
@@ -276,7 +294,8 @@ class FSHLog implements HLog, Syncable {
    * @throws IOException
    */
   private FSHLog(final FileSystem fs, final Path root, final String logName,
-      final Configuration conf, final List<WALActionsListener> listeners,
+      final String oldLogName, final Configuration conf, 
+      final List<WALActionsListener> listeners,
       final boolean failIfLogDirExists, final String prefix)
   throws IOException {
     super();
@@ -1528,10 +1547,10 @@ class FSHLog implements HLog, Syncable {
    * @return Files in passed <code>regiondir</code> as a sorted set.
    * @throws IOException
    */
-  public NavigableSet<Path> getSplitEditFilesSorted()
+  public NavigableSet<Path> getSplitEditFilesSorted(final Path regiondir)
       throws IOException {
     NavigableSet<Path> filesSorted = new TreeSet<Path>();
-    Path editsdir = HLogUtil.getRegionDirRecoveredEditsDir(rootDir);
+    Path editsdir = HLogUtil.getRegionDirRecoveredEditsDir(regiondir);
     if (!fs.exists(editsdir)) return filesSorted;
     FileStatus[] files = FSUtils.listStatus(fs, editsdir, new PathFilter() {
         @Override

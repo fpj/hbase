@@ -142,7 +142,8 @@ public class TestWALObserver {
     deleteDir(basedir);
     fs.mkdirs(new Path(basedir, hri.getEncodedName()));
 
-    HLog log = HLogFactory.createHLog(this.fs, hbaseRootDir, logName, this.conf);
+    HLog log = HLogFactory.createHLog(this.fs, hbaseRootDir, 
+        TestWALObserver.class.getName(), this.conf);
     SampleRegionWALObserver cp = getCoprocessor(log);
 
     // TEST_FAMILY[0] shall be removed from WALEdit.

@@ -2829,7 +2829,7 @@ public class HRegion implements HeapSize { // , Writable{
       }
     }
     long seqid = minSeqIdForTheRegion;
-    NavigableSet<Path> files = log.getSplitEditFilesSorted();
+    NavigableSet<Path> files = log.getSplitEditFilesSorted(regiondir);
     if (files == null || files.isEmpty()) return seqid;
 
     for (Path edits: files) {

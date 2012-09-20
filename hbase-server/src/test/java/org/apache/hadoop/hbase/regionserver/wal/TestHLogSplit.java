@@ -1133,7 +1133,7 @@ public class TestHLogSplit {
         // After creating writer, simulate region's
         // replayRecoveredEditsIfAny() which gets SplitEditFiles of this
         // region and delete them, excluding files with '.temp' suffix.
-        NavigableSet<Path> files = log.getSplitEditFilesSorted();
+        NavigableSet<Path> files = log.getSplitEditFilesSorted(regiondir);
         if (files != null && !files.isEmpty()) {
           for (Path file : files) {
             if (!this.fs.delete(file, false)) {

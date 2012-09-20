@@ -35,13 +35,18 @@ public class HLogFactory {
     private static final Log LOG = LogFactory.getLog(HLogFactory.class);
     
     public static HLog createHLog(final FileSystem fs, final Path root, final String logName,
-                                  final Configuration conf) throws IOException {
-        return new FSHLog(fs, root, logName, conf);
+        final Configuration conf) throws IOException {
+      return new FSHLog(fs, root, logName, conf);
     }
     
     public static HLog createHLog(final FileSystem fs, final Path root, final String logName,
-                                  final Configuration conf, final List<WALActionsListener> listeners,
-                                  final String prefix) throws IOException {
-        return new FSHLog(fs, root, logName, conf, listeners, prefix);
+        final String oldLogName, final Configuration conf) throws IOException {
+      return new FSHLog(fs, root, logName, oldLogName, conf);
+}
+    
+    public static HLog createHLog(final FileSystem fs, final Path root, final String logName,
+        final Configuration conf, final List<WALActionsListener> listeners,
+        final String prefix) throws IOException {
+      return new FSHLog(fs, root, logName, conf, listeners, prefix);
     }
 }
