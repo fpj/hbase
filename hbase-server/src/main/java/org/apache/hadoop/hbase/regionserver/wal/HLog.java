@@ -173,7 +173,7 @@ public interface HLog {
     public WALCoprocessorHost getCoprocessorHost();
     public boolean isLowReplicationRollEnabled();
 
-    public NavigableSet<Path> getSplitEditFilesSorted(final Path regiondir) throws IOException;
+    //public NavigableSet<Path> getSplitEditFilesSorted(final Path regiondir) throws IOException;
     /*
      * Package protected methods
      */

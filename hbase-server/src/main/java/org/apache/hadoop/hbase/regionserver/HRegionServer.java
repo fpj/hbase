@@ -1287,6 +1287,7 @@ public class  HRegionServer implements ClientProtocol,
     // Instantiate replication manager if replication enabled.  Pass it the
     // log directories.
     createNewReplicationInstance(conf, this, this.fs, logdir, oldLogDir);
+    
     return instantiateHLog(rootDir, logName);
   }
 

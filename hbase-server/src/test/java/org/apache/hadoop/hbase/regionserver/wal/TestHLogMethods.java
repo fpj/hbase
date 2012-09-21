@@ -74,7 +74,7 @@ public class TestHLogMethods {
 
     HLog log = HLogFactory.createHLog(fs, regiondir,
                                       "dummyLogName", util.getConfiguration());
-    NavigableSet<Path> files = log.getSplitEditFilesSorted(regiondir);
+    NavigableSet<Path> files = HLogUtil.getSplitEditFilesSorted(fs, regiondir);
     assertEquals(7, files.size());
     assertEquals(files.pollFirst().getName(), first);
     assertEquals(files.pollLast().getName(), last);

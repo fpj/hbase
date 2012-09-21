@@ -2829,7 +2829,8 @@ public class HRegion implements HeapSize { // , Writable{
       }
     }
     long seqid = minSeqIdForTheRegion;
-    NavigableSet<Path> files = log.getSplitEditFilesSorted(regiondir);
+    
+    NavigableSet<Path> files = HLogUtil.getSplitEditFilesSorted(fs, regiondir);
     if (files == null || files.isEmpty()) return seqid;
 
     for (Path edits: files) {
