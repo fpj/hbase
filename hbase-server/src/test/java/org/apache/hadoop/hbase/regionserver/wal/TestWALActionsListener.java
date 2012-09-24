@@ -90,6 +90,7 @@ public class TestWALActionsListener {
     DummyWALActionsListener laterobserver = new DummyWALActionsListener();
     HLog hlog = HLogFactory.createHLog(fs, TEST_UTIL.getDataTestDir(), logName,
                                        conf, list, null);
+    hlog.initialize();
     HRegionInfo hri = new HRegionInfo(SOME_BYTES,
              SOME_BYTES, SOME_BYTES, false);
 

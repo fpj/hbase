@@ -55,6 +55,8 @@ public class TestLogRollingNoCluster {
     Path dir = TEST_UTIL.getDataTestDir();
     HLog wal = HLogFactory.createHLog(fs, dir, "logs",
       TEST_UTIL.getConfiguration());
+    wal.initialize();
+    
     Appender [] appenders = null;
 
     final int count = THREAD_COUNT;

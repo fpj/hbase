@@ -3822,6 +3822,7 @@ public class HRegion implements HeapSize { // , Writable{
     if (hlog == null && !ignoreHLog) {
       effectiveHLog = HLogFactory.createHLog(fs, regionDir,
                                              HConstants.HREGION_LOGDIR_NAME, conf);
+      effectiveHLog.initialize();
     }
     HRegion region = HRegion.newHRegion(tableDir,
         effectiveHLog, fs, conf, info, hTableDescriptor, null);
@@ -5440,6 +5441,7 @@ public class HRegion implements HeapSize { // , Writable{
       + EnvironmentEdgeManager.currentTimeMillis();
 
     final HLog log = HLogFactory.createHLog(fs, logdir, logname, c);
+    log.initialize();
     try {
       processTable(fs, tableDir, log, c, majorCompact);
     } finally {

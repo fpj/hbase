@@ -144,6 +144,7 @@ public class TestWALObserver {
 
     HLog log = HLogFactory.createHLog(this.fs, hbaseRootDir, 
         TestWALObserver.class.getName(), this.conf);
+    log.initialize();
     SampleRegionWALObserver cp = getCoprocessor(log);
 
     // TEST_FAMILY[0] shall be removed from WALEdit.
@@ -292,6 +293,7 @@ public class TestWALObserver {
   public void testWALObserverLoaded() throws Exception {
     HLog log = HLogFactory.createHLog(fs, hbaseRootDir,
                                       TestWALObserver.class.getName(), conf);
+    log.initialize();
     assertNotNull(getCoprocessor(log));
   }
 
@@ -364,6 +366,7 @@ public class TestWALObserver {
   }
   private HLog createWAL(final Configuration c) throws IOException {
     HLog wal = HLogFactory.createHLog(FileSystem.get(c), hbaseRootDir, logName, c);
+    wal.initialize();
     return wal;
   }
   private void addWALEdits (final byte [] tableName, final HRegionInfo hri,

@@ -132,6 +132,7 @@ class FSHLog implements HLog, Syncable {
   private long lastDeferredTxid;
   private final Path oldLogDir;
   private volatile boolean logRollRunning;
+  private boolean failIfLogDirExists;
 
   private WALCoprocessorHost coprocessorHost;
 
@@ -281,7 +282,7 @@ class FSHLog implements HLog, Syncable {
    * HLog object is started up.
    *
    * @param fs filesystem handle
-   * @param dir path to where hlogs are stored
+   * @param root path to where logs and oldlogs
    * @param oldLogDir path to where hlogs are archived
    * @param conf configuration to use
    * @param listeners Listeners on WAL events. Listeners passed here will
@@ -302,31 +303,25 @@ class FSHLog implements HLog, Syncable {
     this.fs = fs;
     this.rootDir = root;
     this.dir = new Path(this.rootDir, logName);
+    this.oldLogDir = new Path(this.rootDir, oldLogName);
     this.conf = conf;
+   
     if (listeners != null) {
       for (WALActionsListener i: listeners) {
         registerWALActionsListener(i);
       }
     }
-    this.blocksize = conf.getLong("hbase.regionserver.hlog.blocksize",
+    
+    this.failIfLogDirExists = failIfLogDirExists;
+    
+    this.blocksize = this.conf.getLong("hbase.regionserver.hlog.blocksize",
         getDefaultBlockSize());
     // Roll at 95% of block size.
     float multi = conf.getFloat("hbase.regionserver.logroll.multiplier", 0.95f);
     this.logrollsize = (long)(this.blocksize * multi);
     this.optionalFlushInterval =
       conf.getLong("hbase.regionserver.optionallogflushinterval", 1 * 1000);
-    if (failIfLogDirExists && fs.exists(dir)) {
-      throw new IOException("Target HLog directory already exists: " + dir);
-    }
-    if (!fs.mkdirs(dir)) {
-      throw new IOException("Unable to mkdir " + dir);
-    }
-    this.oldLogDir = new Path(this.rootDir, HConstants.HREGION_OLDLOGDIR_NAME);
-    if (!fs.exists(oldLogDir)) {
-      if (!fs.mkdirs(this.oldLogDir)) {
-        throw new IOException("Unable to mkdir " + this.oldLogDir);
-      }
-    }
+    
     this.maxLogs = conf.getInt("hbase.regionserver.maxlogs", 32);
     this.minTolerableReplication = conf.getInt(
         "hbase.regionserver.hlog.tolerable.lowreplication",
@@ -336,7 +331,9 @@ class FSHLog implements HLog, Syncable {
     this.enabled = conf.getBoolean("hbase.regionserver.hlog.enabled", true);
     this.closeErrorsTolerated = conf.getInt(
         "hbase.regionserver.logroll.errors.tolerated", 0);
-
+    
+    this.logSyncerThread = new LogSyncer(this.optionalFlushInterval);
+    
     LOG.info("HLog configuration: blocksize=" +
       StringUtils.byteDesc(this.blocksize) +
       ", rollsize=" + StringUtils.byteDesc(this.logrollsize) +
@@ -345,13 +342,32 @@ class FSHLog implements HLog, Syncable {
     // If prefix is null||empty then just name it hlog
     this.prefix = prefix == null || prefix.isEmpty() ?
         "hlog" : URLEncoder.encode(prefix, "UTF8");
+  }
+   
+  /**
+   * Initialize FSWAL.
+   */
+  public void initialize() 
+  throws IOException {
+    
+    if (failIfLogDirExists && this.fs.exists(dir)) {
+      throw new IOException("Target HLog directory already exists: " + dir);
+    }
+    if (!fs.mkdirs(dir)) {
+      throw new IOException("Unable to mkdir " + dir);
+    }
+
+    if (!fs.exists(oldLogDir)) {
+      if (!fs.mkdirs(this.oldLogDir)) {
+        throw new IOException("Unable to mkdir " + this.oldLogDir);
+      }
+    }
     // rollWriter sets this.hdfs_out if it can.
     rollWriter();
-
+    
     // handle the reflection necessary to call getNumCurrentReplicas()
     this.getNumCurrentReplicas = getGetNumCurrentReplicas(this.hdfs_out);
 
-    logSyncerThread = new LogSyncer(this.optionalFlushInterval);
     Threads.setDaemonThreadRunning(logSyncerThread.getThread(),
         Thread.currentThread().getName() + ".logSyncer");
     coprocessorHost = new WALCoprocessorHost(this, conf);

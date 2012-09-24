@@ -147,6 +147,7 @@ public class TestStore extends TestCase {
     htd.addFamily(hcd);
     HRegionInfo info = new HRegionInfo(htd.getName(), null, null, false);
     HLog hlog = HLogFactory.createHLog(fs, basedir, logName, conf);
+    hlog.initialize();
     HRegion region = new HRegion(basedir, hlog, fs, conf, info, htd, null);
 
     store = new Store(basedir, region, hcd, fs, conf);

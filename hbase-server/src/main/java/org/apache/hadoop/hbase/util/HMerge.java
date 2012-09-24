@@ -159,6 +159,7 @@ class HMerge {
       String logname = "merge_" + System.currentTimeMillis() + HConstants.HREGION_LOGDIR_NAME;
 
       this.hlog = HLogFactory.createHLog(fs, tabledir, logname, conf);
+      this.hlog.initialize();
     }
 
     void process() throws IOException {

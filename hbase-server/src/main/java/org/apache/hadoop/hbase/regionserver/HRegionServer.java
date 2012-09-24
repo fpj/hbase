@@ -1299,8 +1299,11 @@ public class  HRegionServer implements ClientProtocol,
    * @throws IOException
    */
   protected HLog instantiateHLog(Path rootdir, String logName) throws IOException {
-    return HLogFactory.createHLog(this.fs.getBackingFs(), rootdir, logName, this.conf,
+    HLog log = HLogFactory.createHLog(this.fs.getBackingFs(), rootdir, logName, this.conf,
       getWALActionListeners(), this.serverNameFromMasterPOV.toString());
+    log.initialize();
+    
+    return log;
   }
 
   /**

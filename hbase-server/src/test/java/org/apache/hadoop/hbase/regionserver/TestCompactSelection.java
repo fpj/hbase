@@ -87,7 +87,9 @@ public class TestCompactSelection extends TestCase {
     htd.addFamily(hcd);
     HRegionInfo info = new HRegionInfo(htd.getName(), null, null, false);
 
-    HLog hlog = HLogFactory.createHLog(fs, basedir, logName, conf);
+    HLog hlog = HLogFactory.createHLog(fs, basedir, 
+        logName, conf);
+    hlog.initialize();
     HRegion region = HRegion.createHRegion(info, basedir, conf, htd);
     HRegion.closeHRegion(region);
     Path tableDir = new Path(basedir, Bytes.toString(htd.getName()));

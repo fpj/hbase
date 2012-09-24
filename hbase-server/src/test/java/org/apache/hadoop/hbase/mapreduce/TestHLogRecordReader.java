@@ -112,6 +112,7 @@ public class TestHLogRecordReader {
   public void testPartialRead() throws Exception {
     HLog log = HLogFactory.createHLog(fs, hbaseDir,
                                       logName, conf);
+    log.initialize();
     long ts = System.currentTimeMillis();
     WALEdit edit = new WALEdit();
     edit.add(new KeyValue(rowName, family, Bytes.toBytes("1"),
@@ -168,6 +169,7 @@ public class TestHLogRecordReader {
   @Test
   public void testHLogRecordReader() throws Exception {
     HLog log = HLogFactory.createHLog(fs, hbaseDir, logName, conf);
+    log.initialize();
     byte [] value = Bytes.toBytes("value");
     WALEdit edit = new WALEdit();
     edit.add(new KeyValue(rowName, family, Bytes.toBytes("1"),

@@ -140,6 +140,7 @@ public interface HLog {
         }
     }
           
+    public void initialize() throws IOException;
     public void registerWALActionsListener(final WALActionsListener listener);
     public boolean unregisterWALActionsListener(final WALActionsListener listener);
     public long getFilenum();

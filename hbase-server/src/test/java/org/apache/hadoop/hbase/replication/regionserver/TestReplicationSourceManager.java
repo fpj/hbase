@@ -173,6 +173,7 @@ public class TestReplicationSourceManager {
     listeners.add(replication);
     HLog hlog = HLogFactory.createHLog(fs, utility.getDataTestDir(), logName,
         conf, listeners, URLEncoder.encode("regionserver:60020", "UTF8"));
+    hlog.initialize();
 
     manager.init();
     HTableDescriptor htd = new HTableDescriptor();

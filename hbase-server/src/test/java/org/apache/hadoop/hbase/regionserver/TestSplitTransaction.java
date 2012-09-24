@@ -69,6 +69,8 @@ public class TestSplitTransaction {
     this.fs.delete(this.testdir, true);
     this.wal = HLogFactory.createHLog(fs, this.testdir, "logs",
       TEST_UTIL.getConfiguration());
+    this.wal.initialize();
+    
     this.parent = createRegion(this.testdir, this.wal);
     TEST_UTIL.getConfiguration().setBoolean("hbase.testing.nocluster", true);
   }
