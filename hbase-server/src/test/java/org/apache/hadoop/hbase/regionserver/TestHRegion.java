@@ -225,7 +225,8 @@ public class TestHRegion extends HBaseTestCase {
       for (long i = minSeqId; i <= maxSeqId; i += 10) {
         Path recoveredEdits = new Path(recoveredEditsDir, String.format("%019d", i));
         fs.create(recoveredEdits);
-        HLog.Writer writer = HLogUtil.createWriter(fs, recoveredEdits, conf);
+        HLog.Writer writer = HLogFactory.createWriter(fs, 
+            recoveredEdits, conf);
 
         long time = System.nanoTime();
         WALEdit edit = new WALEdit();
@@ -276,7 +277,8 @@ public class TestHRegion extends HBaseTestCase {
       for (long i = minSeqId; i <= maxSeqId; i += 10) {
         Path recoveredEdits = new Path(recoveredEditsDir, String.format("%019d", i));
         fs.create(recoveredEdits);
-        HLog.Writer writer = HLogUtil.createWriter(fs, recoveredEdits, conf);
+        HLog.Writer writer = HLogFactory.createWriter(fs, 
+            recoveredEdits, conf);
 
         long time = System.nanoTime();
         WALEdit edit = new WALEdit();

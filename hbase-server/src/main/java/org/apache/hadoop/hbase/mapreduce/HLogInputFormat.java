@@ -145,7 +145,8 @@ public class HLogInputFormat extends InputFormat<HLogKey, WALEdit> {
       Configuration conf = context.getConfiguration();
       LOG.info("Opening reader for "+split);
       try {
-        this.reader = HLogUtil.getReader(logFile.getFileSystem(conf), logFile, conf);
+        this.reader = HLogFactory.createReader(logFile.getFileSystem(conf), 
+            logFile, conf);
       } catch (EOFException x) {
         LOG.info("Ignoring corrupted HLog file: " + logFile
             + " (This is normal when a RegionServer crashed.)");

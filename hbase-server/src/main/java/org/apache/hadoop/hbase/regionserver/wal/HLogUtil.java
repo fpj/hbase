@@ -59,12 +59,6 @@ public class HLogUtil {
       }
     }
     
-    private static Class<? extends Writer> logWriterClass;
-    private static Class<? extends Reader> logReaderClass;
-    
-    static void resetLogReaderClass() {
-        logReaderClass = null;
-      }
     
     /**
      * @param family
@@ -105,14 +99,14 @@ public class HLogUtil {
       return pattern.matcher(filename).matches();
     }
     
-    /**
+    /*
      * Get a reader for the WAL.
      * @param fs
      * @param path
      * @param conf
      * @return A WAL reader.  Close when done with it.
      * @throws IOException
-     */
+     *
     public static HLog.Reader getReader(final FileSystem fs,
       final Path path, Configuration conf)
     throws IOException {
@@ -136,13 +130,13 @@ public class HLogUtil {
       }
     }
     
-    /**
+    **
      * Get a writer for the WAL.
      * @param path
      * @param conf
      * @return A WAL writer.  Close when done with it.
      * @throws IOException
-     */
+     *
     public static HLog.Writer createWriter(final FileSystem fs,
         final Path path, Configuration conf)
     throws IOException {
@@ -157,7 +151,7 @@ public class HLogUtil {
       } catch (Exception e) {
         throw new IOException("cannot get log writer", e);
       }
-    }
+    }*/
     
     /**
      * Construct the HLog directory name

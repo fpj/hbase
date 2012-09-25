@@ -30,6 +30,8 @@ import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.hbase.regionserver.wal.HLog.Reader;
+import org.apache.hadoop.hbase.regionserver.wal.HLog.Writer;
 
 public class HLogFactory {
     private static final Log LOG = LogFactory.getLog(HLogFactory.class);
@@ -49,4 +51,70 @@ public class HLogFactory {
         final String prefix) throws IOException {
       return new FSHLog(fs, root, logName, conf, listeners, prefix);
     }
+    
+    /*
+     * WAL Reader
+     */
+    
+    private static Class<? extends Reader> logReaderClass;
+    
+    static void resetLogReaderClass() {
+      logReaderClass = null;
+    }
+    
+    /**
+     * Create a reader for the WAL.
+     * @return A WAL reader.  Close when done with it.
+     * @throws IOException
+     */
+    public static HLog.Reader createReader(final FileSystem fs,
+        final Path path, Configuration conf)
+    throws IOException {
+      try {
+
+        if (logReaderClass == null) {
+
+          logReaderClass = conf.getClass("hbase.regionserver.hlog.reader.impl",
+              SequenceFileLogReader.class, Reader.class);
+        }
+
+
+        HLog.Reader reader = logReaderClass.newInstance();
+        reader.init(fs, path, conf);
+        return reader;
+      } catch (IOException e) {
+        throw e;
+      }
+      catch (Exception e) {
+        throw new IOException("Cannot get log reader", e);
+      }
+    }
+    
+    /*
+     * WAL writer
+     */
+    
+    private static Class<? extends Writer> logWriterClass;
+    
+    /**
+     * Create a writer for the WAL.
+     * @return A WAL writer.  Close when done with it.
+     * @throws IOException
+     */
+    public static HLog.Writer createWriter(final FileSystem fs,
+        final Path path, Configuration conf)
+    throws IOException {
+      try {
+        if (logWriterClass == null) {
+          logWriterClass = conf.getClass("hbase.regionserver.hlog.writer.impl",
+              SequenceFileLogWriter.class, Writer.class);
+        }
+        FSHLog.Writer writer = (FSHLog.Writer) logWriterClass.newInstance();
+        writer.init(fs, path, conf);
+        return writer;
+      } catch (Exception e) {
+        throw new IOException("cannot get log writer", e);
+      }
+    }
+    
 }

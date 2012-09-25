@@ -53,6 +53,7 @@ import org.apache.hadoop.hbase.client.HConnection;
 import org.apache.hadoop.hbase.client.HConnectionManager;
 import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
 import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLogFactory;
 import org.apache.hadoop.hbase.regionserver.wal.HLogKey;
 import org.apache.hadoop.hbase.regionserver.wal.WALEdit;
 import org.apache.hadoop.hbase.replication.ReplicationZookeeper;
@@ -480,7 +481,8 @@ public class ReplicationSource extends Thread
           " at " + this.position);
       try {
        this.reader = null;
-       this.reader = HLogUtil.getReader(this.fs, this.currentPath, this.conf);
+       this.reader = HLogFactory.createReader(this.fs, 
+           this.currentPath, this.conf);
       } catch (FileNotFoundException fnfe) {
         if (this.queueRecovered) {
           // We didn't find the log in the archive directory, look if it still

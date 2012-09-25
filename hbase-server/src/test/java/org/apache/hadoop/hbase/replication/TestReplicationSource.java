@@ -33,6 +33,7 @@ import org.apache.hadoop.hbase.HConstants;
 import org.apache.hadoop.hbase.KeyValue;
 import org.apache.hadoop.hbase.MediumTests;
 import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLogFactory;
 import org.apache.hadoop.hbase.regionserver.wal.HLogUtil;
 import org.apache.hadoop.hbase.regionserver.wal.HLogKey;
 import org.apache.hadoop.hbase.regionserver.wal.WALEdit;
@@ -79,7 +80,8 @@ public class TestReplicationSource {
     Path logPath = new Path(logDir, "log");
     if (!FS.exists(logDir)) FS.mkdirs(logDir);
     if (!FS.exists(oldLogDir)) FS.mkdirs(oldLogDir);
-    HLog.Writer writer = HLogUtil.createWriter(FS, logPath, conf);
+    HLog.Writer writer = HLogFactory.createWriter(FS, 
+        logPath, conf);
     for(int i = 0; i < 3; i++) {
       byte[] b = Bytes.toBytes(Integer.toString(i));
       KeyValue kv = new KeyValue(b,b,b);
@@ -91,7 +93,8 @@ public class TestReplicationSource {
     }
     writer.close();
 
-    HLog.Reader reader = HLogUtil.getReader(FS, logPath, conf);
+    HLog.Reader reader = HLogFactory.createReader(FS, 
+        logPath, conf);
     HLog.Entry entry = reader.next();
     assertNotNull(entry);
 

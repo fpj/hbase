@@ -499,7 +499,8 @@ public class TestLogRolling  {
       LOG.debug("Reading HLog "+FSUtils.getPath(p));
       HLog.Reader reader = null;
       try {
-        reader = HLogUtil.getReader(fs, p, TEST_UTIL.getConfiguration());
+        reader = HLogFactory.createReader(fs, p, 
+            TEST_UTIL.getConfiguration());
         HLog.Entry entry;
         while ((entry = reader.next()) != null) {
           LOG.debug("#"+entry.getKey().getLogSeqNum()+": "+entry.getEdit().getKeyValues());

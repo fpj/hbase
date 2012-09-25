@@ -260,7 +260,7 @@ public class TestHLog  {
       wal.sync();
       // Open a Reader.
       Path walPath = ((FSHLog) wal).computeFilename();
-      reader = HLogUtil.getReader(fs, walPath, conf);
+      reader = HLogFactory.createReader(fs, walPath, conf);
       int count = 0;
       HLog.Entry entry = new HLog.Entry();
       while ((entry = reader.next(entry)) != null) count++;
@@ -273,14 +273,14 @@ public class TestHLog  {
         kvs.add(new KeyValue(Bytes.toBytes(i), bytes, bytes));
         wal.append(info, bytes, kvs, System.currentTimeMillis(), htd);
       }
-      reader = HLogUtil.getReader(fs, walPath, conf);
+      reader = HLogFactory.createReader(fs, walPath, conf);
       count = 0;
       while((entry = reader.next(entry)) != null) count++;
       assertTrue(count >= total);
       reader.close();
       // If I sync, should see double the edits.
       wal.sync();
-      reader = HLogUtil.getReader(fs, walPath, conf);
+      reader = HLogFactory.createReader(fs, walPath, conf);
       count = 0;
       while((entry = reader.next(entry)) != null) count++;
       assertEquals(total * 2, count);
@@ -294,14 +294,14 @@ public class TestHLog  {
       }
       // Now I should have written out lots of blocks.  Sync then read.
       wal.sync();
-      reader = HLogUtil.getReader(fs, walPath, conf);
+      reader = HLogFactory.createReader(fs, walPath, conf);
       count = 0;
       while((entry = reader.next(entry)) != null) count++;
       assertEquals(total * 3, count);
       reader.close();
       // Close it and ensure that closed, Reader gets right length also.
       wal.close();
-      reader = HLogUtil.getReader(fs, walPath, conf);
+      reader = HLogFactory.createReader(fs, walPath, conf);
       count = 0;
       while((entry = reader.next(entry)) != null) count++;
       assertEquals(total * 3, count);
@@ -345,7 +345,7 @@ public class TestHLog  {
     assertEquals(howmany, splits.size());
     for (int i = 0; i < splits.size(); i++) {
       LOG.info("Verifying=" + splits.get(i));
-      HLog.Reader reader = HLogUtil.getReader(fs, splits.get(i), conf);
+      HLog.Reader reader = HLogFactory.createReader(fs, splits.get(i), conf);
       try {
         int count = 0;
         String previousRegion = null;
@@ -530,7 +530,7 @@ public class TestHLog  {
       Path filename = ((FSHLog) log).computeFilename();
       log = null;
       // Now open a reader on the log and assert append worked.
-      reader = HLogUtil.getReader(fs, filename, conf);
+      reader = HLogFactory.createReader(fs, filename, conf);
       // Above we added all columns on a single row so we only read one
       // entry in the below... thats why we have '1'.
       for (int i = 0; i < 1; i++) {
@@ -601,7 +601,7 @@ public class TestHLog  {
       Path filename = ((FSHLog) log).computeFilename();
       log = null;
       // Now open a reader on the log and assert append worked.
-      reader = HLogUtil.getReader(fs, filename, conf);
+      reader = HLogFactory.createReader(fs, filename, conf);
       HLog.Entry entry = reader.next();
       assertEquals(COL_COUNT, entry.getEdit().size());
       int idx = 0;

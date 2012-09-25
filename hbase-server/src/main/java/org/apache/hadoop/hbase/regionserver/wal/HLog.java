@@ -74,7 +74,10 @@ public interface HLog {
         void append(Entry entry) throws IOException;
         long getLength() throws IOException;
     }
-      
+    
+    //public HLog.Reader getReader() throws IOException;
+    //public HLog.Writer createWriter() throws IOException;
+    
     /**
      * Utility class that lets us keep track of the edit with it's key
      * Only used when splitting logs

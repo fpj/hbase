@@ -215,7 +215,7 @@ class FSHLog implements HLog, Syncable {
   private final int closeErrorsTolerated;
 
   private final AtomicInteger closeErrorCount = new AtomicInteger();
-
+  
   /**
    * Constructor.
    *
@@ -622,7 +622,7 @@ class FSHLog implements HLog, Syncable {
    */
   protected Writer createWriterInstance(final FileSystem fs, final Path path,
       final Configuration conf) throws IOException {
-    return HLogUtil.createWriter(fs, path, conf);
+    return HLogFactory.createWriter(fs, path, conf);
   }
 
   /*
@@ -1554,6 +1554,7 @@ class FSHLog implements HLog, Syncable {
         conf, baseDir, p, oldLogDir, fs);
     logSplitter.splitLog();
   }
+  
 
   /**
    * @return Coprocessor host.

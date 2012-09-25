@@ -240,7 +240,7 @@ public class HLogPrettyPrinter {
       out.print("[");
       firstTxn = true;
     }
-    Reader log = HLogUtil.getReader(fs, p, conf);
+    Reader log = HLogFactory.createReader(fs, p, conf);
     try {
       FSHLog.Entry entry;
       while ((entry = log.next()) != null) {

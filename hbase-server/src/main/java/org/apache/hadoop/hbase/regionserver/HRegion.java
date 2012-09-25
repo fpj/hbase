@@ -2913,7 +2913,7 @@ public class HRegion implements HeapSize { // , Writable{
     status.setStatus("Opening logs");
     HLog.Reader reader = null;
     try {
-      reader = HLogUtil.getReader(this.fs, edits, conf);
+      reader = HLogFactory.createReader(this.fs, edits, conf);
       long currentEditSeqId = -1;
       long firstSeqIdInLog = -1;
       long skippedEdits = 0;

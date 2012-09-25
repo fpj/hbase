@@ -245,7 +245,8 @@ public final class HLogPerformanceEvaluation extends Configured implements Tool 
    * @throws IOException
    */
   private long verify(final Path wal, final boolean verbose) throws IOException {
-    HLog.Reader reader = HLogUtil.getReader(wal.getFileSystem(getConf()), wal, getConf());
+    HLog.Reader reader = HLogFactory.createReader(wal.getFileSystem(getConf()), 
+        wal, getConf());
     long previousSeqid = -1;
     long count = 0;
     try {

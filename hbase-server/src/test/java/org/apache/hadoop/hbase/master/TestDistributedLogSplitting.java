@@ -51,6 +51,7 @@ import org.apache.hadoop.hbase.protobuf.ProtobufUtil;
 import org.apache.hadoop.hbase.regionserver.HRegion;
 import org.apache.hadoop.hbase.regionserver.HRegionServer;
 import org.apache.hadoop.hbase.regionserver.wal.HLog;
+import org.apache.hadoop.hbase.regionserver.wal.HLogFactory;
 import org.apache.hadoop.hbase.regionserver.wal.HLogUtil;
 import org.apache.hadoop.hbase.regionserver.wal.WALEdit;
 import org.apache.hadoop.hbase.util.Bytes;
@@ -435,7 +436,7 @@ public class TestDistributedLogSplitting {
   private int countHLog(Path log, FileSystem fs, Configuration conf)
   throws IOException {
     int count = 0;
-    HLog.Reader in = HLogUtil.getReader(fs, log, conf);
+    HLog.Reader in = HLogFactory.createReader(fs, log, conf);
     while (in.next() != null) {
       count++;
     }
