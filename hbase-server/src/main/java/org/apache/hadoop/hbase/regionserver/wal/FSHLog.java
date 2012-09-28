@@ -220,8 +220,8 @@ class FSHLog implements HLog, Syncable {
    * Constructor.
    *
    * @param fs filesystem handle
-   * @param dir path to where hlogs are stored
-   * @param oldLogDir path to where hlogs are archived
+   * @param root path for stored and archived hlogs
+   * @param logName dir where hlogs are stored
    * @param conf configuration to use
    * @throws IOException
    */
@@ -236,8 +236,9 @@ class FSHLog implements HLog, Syncable {
    * Constructor.
    *
    * @param fs filesystem handle
-   * @param dir path to where hlogs are stored
-   * @param oldLogDir path to where hlogs are archived
+   * @param root path for stored and archived hlogs
+   * @param logName dir where hlogs are stored
+   * @param oldLogName dir where hlogs are archived
    * @param conf configuration to use
    * @throws IOException
    */
@@ -256,8 +257,9 @@ class FSHLog implements HLog, Syncable {
    * HLog object is started up.
    *
    * @param fs filesystem handle
-   * @param dir path to where hlogs are stored
-   * @param oldLogDir path to where hlogs are archived
+   * @param root path for stored and archived hlogs
+   * @param logName dir where hlogs are stored
+   * @param oldLogName dir where hlogs are archived
    * @param conf configuration to use
    * @param listeners Listeners on WAL events. Listeners passed here will
    * be registered before we do anything else; e.g. the
