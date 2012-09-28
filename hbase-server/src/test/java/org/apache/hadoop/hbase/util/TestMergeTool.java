@@ -271,7 +271,6 @@ public class TestMergeTool extends HBaseTestCase {
 
     HLog log = HLogFactory.createHLog(this.fs, logPath, 
         logName, this.conf);
-    log.initialize();
     
     try {
        // Merge Region 0 and Region 1

@@ -74,10 +74,7 @@ public interface HLog {
         void append(Entry entry) throws IOException;
         long getLength() throws IOException;
     }
-    
-    //public HLog.Reader getReader() throws IOException;
-    //public HLog.Writer createWriter() throws IOException;
-    
+        
     /**
      * Utility class that lets us keep track of the edit with it's key
      * Only used when splitting logs
@@ -143,7 +140,6 @@ public interface HLog {
         }
     }
           
-    public void initialize() throws IOException;
     public void registerWALActionsListener(final WALActionsListener listener);
     public boolean unregisterWALActionsListener(final WALActionsListener listener);
     public long getFilenum();
@@ -176,14 +172,4 @@ public interface HLog {
     public void abortCacheFlush(byte[] encodedRegionName);
     public WALCoprocessorHost getCoprocessorHost();
     public boolean isLowReplicationRollEnabled();
-
-    //public NavigableSet<Path> getSplitEditFilesSorted(final Path regiondir) throws IOException;
-    /*
-     * Package protected methods
-     */
-    //int getNumLogFiles();
-    //OutputStream getOutputStream();
-    //Path computeFilename();
-    //Path computeFilename(long filenum);
-    //boolean canGetCurReplicas();
 }

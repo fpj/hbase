@@ -683,7 +683,6 @@ public class TestWALReplay {
 
     public MockHLog(FileSystem fs, Path rootDir, String logName, Configuration conf) throws IOException {
       super(fs, rootDir, logName, conf);
-      initialize();
     }
 
     @Override
@@ -789,7 +788,6 @@ public class TestWALReplay {
   private HLog createWAL(final Configuration c) throws IOException {
     HLog wal = HLogFactory.createHLog(FileSystem.get(c), 
         hbaseRootDir, logName, c);
-    wal.initialize();
     // Set down maximum recovery so we dfsclient doesn't linger retrying something
     // long gone.
     HBaseTestingUtility.setMaxRecoveryErrorCount(((FSHLog) wal).getOutputStream(), 1);

@@ -851,7 +851,6 @@ public class TestHLogSplit {
       HRegionInfo regioninfo = new HRegionInfo(tableName,
           HConstants.EMPTY_START_ROW, HConstants.EMPTY_END_ROW);
       log = HLogFactory.createHLog(fs, hbaseDir, logName, conf);
-      log.initialize();
       
       final int total = 20;
       for (int i = 0; i < total; i++) {
@@ -1127,7 +1126,6 @@ public class TestHLogSplit {
 
     final HLog log = HLogFactory.createHLog(fs, regiondir, 
         regionName, conf);
-    log.initialize();
 
     HLogSplitter logSplitter = new HLogSplitter(
         conf, hbaseDir, hlogDir, oldLogDir, fs) {

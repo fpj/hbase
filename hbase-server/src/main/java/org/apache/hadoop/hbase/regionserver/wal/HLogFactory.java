@@ -109,7 +109,7 @@ public class HLogFactory {
           logWriterClass = conf.getClass("hbase.regionserver.hlog.writer.impl",
               SequenceFileLogWriter.class, Writer.class);
         }
-        FSHLog.Writer writer = (FSHLog.Writer) logWriterClass.newInstance();
+        HLog.Writer writer = (HLog.Writer) logWriterClass.newInstance();
         writer.init(fs, path, conf);
         return writer;
       } catch (Exception e) {

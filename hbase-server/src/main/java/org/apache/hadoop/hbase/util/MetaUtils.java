@@ -102,7 +102,6 @@ public class MetaUtils {
           HConstants.HREGION_LOGDIR_NAME + "_" + System.currentTimeMillis();
       this.log = HLogFactory.createHLog(this.fs, this.fs.getHomeDirectory(),
                                         logName, this.conf);
-      this.log.initialize();
     }
     return this.log;
   }

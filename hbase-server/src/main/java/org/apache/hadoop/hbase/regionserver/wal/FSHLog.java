@@ -342,14 +342,7 @@ class FSHLog implements HLog, Syncable {
     // If prefix is null||empty then just name it hlog
     this.prefix = prefix == null || prefix.isEmpty() ?
         "hlog" : URLEncoder.encode(prefix, "UTF8");
-  }
    
-  /**
-   * Initialize FSWAL.
-   */
-  public void initialize() 
-  throws IOException {
-    
     if (failIfLogDirExists && this.fs.exists(dir)) {
       throw new IOException("Target HLog directory already exists: " + dir);
     }

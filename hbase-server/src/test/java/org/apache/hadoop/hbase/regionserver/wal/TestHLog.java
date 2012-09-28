@@ -160,7 +160,6 @@ public class TestHLog  {
     Path logdir = new Path(hbaseDir, HConstants.HREGION_LOGDIR_NAME);
     HLog log = HLogFactory.createHLog(fs, hbaseDir, 
         HConstants.HREGION_LOGDIR_NAME, conf);
-    log.initialize();
     final int howmany = 3;
     HRegionInfo[] infos = new HRegionInfo[3];
     Path tabledir = new Path(hbaseDir, getName());
@@ -239,7 +238,6 @@ public class TestHLog  {
     in.close();
 
     HLog wal = HLogFactory.createHLog(fs, dir, "hlogdir", conf);
-    wal.initialize();
     
     final int total = 20;
     HLog.Reader reader = null;
@@ -384,7 +382,6 @@ public class TestHLog  {
 
     HLog wal = HLogFactory.createHLog(fs, dir, "hlogdir", 
         "hlogdir_archive", conf);
-    wal.initialize();
     final int total = 20;
 
     HTableDescriptor htd = new HTableDescriptor();
@@ -506,7 +503,6 @@ public class TestHLog  {
     HLog log = null;
     try {
       log = HLogFactory.createHLog(fs, hbaseDir, getName(), conf);
-      log.initialize();
       
       // Write columns named 1, 2, 3, etc. and then values of single byte
       // 1, 2, 3...
@@ -579,7 +575,6 @@ public class TestHLog  {
     final byte [] row = Bytes.toBytes("row");
     Reader reader = null;
     HLog log = HLogFactory.createHLog(fs, hbaseDir, getName(), conf);
-    log.initialize();
     try {
       // Write columns named 1, 2, 3, etc. and then values of single byte
       // 1, 2, 3...
@@ -648,7 +643,6 @@ public class TestHLog  {
     final byte [] tableName = Bytes.toBytes("tablename");
     final byte [] row = Bytes.toBytes("row");
     HLog log = HLogFactory.createHLog(fs, hbaseDir, getName(), conf);
-    log.initialize();
     try {
       DumbWALActionsListener visitor = new DumbWALActionsListener();
       log.registerWALActionsListener(visitor);
@@ -686,7 +680,6 @@ public class TestHLog  {
 
     HLog log = HLogFactory.createHLog(fs, hbaseDir, 
         getName(), conf);
-    log.initialize();
     try {
       HRegionInfo hri = new HRegionInfo(tableName,
           HConstants.EMPTY_START_ROW, HConstants.EMPTY_END_ROW);
@@ -739,7 +732,6 @@ public class TestHLog  {
     // test to see whether the coprocessor is loaded or not.
     HLog log = HLogFactory.createHLog(fs, hbaseDir, 
         getName(), conf);
-    log.initialize();
     try {
       WALCoprocessorHost host = log.getCoprocessorHost();
       Coprocessor c = host.findCoprocessor(SampleRegionWALObserver.class.getName());
